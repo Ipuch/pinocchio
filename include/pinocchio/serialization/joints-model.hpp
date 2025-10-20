@@ -209,6 +209,19 @@ namespace boost
     template<class Archive, typename Scalar, int Options>
     void serialize(
       Archive & ar,
+      pinocchio::JointModelEllipsoidTpl<Scalar, Options> & joint,
+      const unsigned int version)
+    {
+      typedef pinocchio::JointModelEllipsoidTpl<Scalar, Options> JointType;
+      fix::serialize(ar, *static_cast<pinocchio::JointModelBase<JointType> *>(&joint), version);
+      ar & make_nvp("radius_a", joint.radius_a);
+      ar & make_nvp("radius_b", joint.radius_b);
+      ar & make_nvp("radius_c", joint.radius_c);
+    }
+
+    template<class Archive, typename Scalar, int Options>
+    void serialize(
+      Archive & ar,
       pinocchio::JointModelTranslationTpl<Scalar, Options> & joint,
       const unsigned int version)
     {
