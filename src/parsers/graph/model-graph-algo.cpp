@@ -90,6 +90,9 @@ namespace pinocchio
         // Joint Spherical ZYX
         typedef typename JointCollectionDefault::JointModelSphericalZYX JointModelSphericalZYX;
 
+        // Joint Ellipsoid
+        typedef typename JointCollectionDefault::JointModelEllipsoid JointModelEllipsoid;
+
         // Joint Translation
         typedef typename JointCollectionDefault::JointModelTranslation JointModelTranslation;
 
@@ -221,6 +224,10 @@ namespace pinocchio
         {
           return JointModelSphericalZYX();
         }
+        ReturnType operator()(const JointEllipsoid & joint) const
+        {
+          return JointModelEllipsoid(joint.radius_a, joint.radius_b, joint.radius_c);
+        }
         ReturnType operator()(const JointUniversal & joint) const
         {
           return JointModelUniversal(joint.axis1, joint.axis2);
@@ -332,6 +339,28 @@ namespace pinocchio
             previous_body.parentJoint,
             JointModelMimic(cjm(joint), primary_joint, joint.scaling, joint.offset),
             previous_body.placement * joint_pose, edge.name);
+
+          model.addJointFrame(j_id);
+          model.appendBodyToJoint(j_id, b_f.inertia); // check this
+          model.addBodyFrame(target_vertex.name, j_id, body_pose);
+        }
+
+        void operator()(const JointEllipsoid & joint, const BodyFrame & b_f)
+        {
+          if (!edge.forward)
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument, "Graph - JointEllipsoid cannot be reversed yet.");
+
+          if (boost::get<BodyFrame>(&source_vertex.frame) == nullptr)
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument, "Graph - Invalid joint between a body and a non body frame.");
+
+          const SE3 & joint_pose = edge.source_to_joint;
+          const SE3 & body_pose = edge.joint_to_target;
+
+          const Frame previous_body = model.frames[model.getFrameId(source_vertex.name, BODY)];
+          JointIndex j_id = model.addJoint(
+            previous_body.parentJoint, cjm(joint), previous_body.placement * joint_pose, edge.name);
 
           model.addJointFrame(j_id);
           model.appendBodyToJoint(j_id, b_f.inertia); // check this

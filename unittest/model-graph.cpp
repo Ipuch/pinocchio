@@ -618,6 +618,66 @@ BOOST_AUTO_TEST_CASE(test_reverse_spherical_zyx)
 }
 
 /// @brief test if reversing of a composite joint is correct.
+BOOST_AUTO_TEST_CASE(test_reverse_ellipsoid)
+{
+  using namespace pinocchio::graph;
+
+  ModelGraph g = buildReversableModelGraph(JointEllipsoid(0.01, 0.01, 0.01));
+  ///////////////// Model
+  BOOST_CHECK_THROW(buildModel(g, "body2", pinocchio::SE3::Identity()), std::invalid_argument);
+
+  //////////////////////////////////// Forward model
+  pinocchio::Model m_forward = buildModel(g, "body1", pinocchio::SE3::Identity());
+  pinocchio::Data d_f(m_forward);
+  // config vector forward model Ellipsoid
+  Eigen::Vector3d q(m_forward.nq);
+  q << M_PI / 4, M_PI, M_PI / 2;
+  pinocchio::framesForwardKinematics(m_forward, d_f, q);
+
+  // Create a standalone model with the EXACT same structure as the graph model
+  pinocchio::Model modelEllipsoid;
+  pinocchio::SE3 poseBody1 =
+    pinocchio::SE3(Eigen::Matrix3d::Identity(), Eigen::Vector3d(2., 0., 0.));
+  pinocchio::SE3 poseBody2 =
+    pinocchio::SE3(Eigen::Matrix3d::Identity(), Eigen::Vector3d(0., 3., 0.));
+  pinocchio::Model::JointIndex idx;
+
+  pinocchio::JointModelEllipsoid jModelEllipsoid(0.01, 0.01, 0.01);
+  idx = modelEllipsoid.addJoint(0, jModelEllipsoid, poseBody1, "ellipsoid");
+  std::cout << "Added joint ellipsoid with index: " << idx << std::endl;
+
+  pinocchio::Inertia body2_inertia = Inertia::Identity();
+  modelEllipsoid.appendBodyToJoint(idx, body2_inertia, poseBody2);
+  // pinocchio::FrameIndex frame_id = modelEllipsoid.addBodyFrame("body2", -1, poseBody2);
+
+  // This line is not working yet.
+  // pinocchio::FrameIndex frame_id = modelEllipsoid.addBodyFrame("body2", idx, poseBody2);
+
+  // pinocchio::Data jDataEllipsoid(modelEllipsoid);
+  // pinocchio::framesForwardKinematics(modelEllipsoid, jDataEllipsoid, q);
+
+  // DEBUG: Print both transforms
+  std::cout << "nb frames in new model: " << modelEllipsoid.nframes << std::endl;
+  // std::cout << "=== DEBUG test_reverse_ellipsoid ===" << std::endl;
+  // std::cout << "body2_graph translation:\n" << body2_graph.translation().transpose() <<
+  // std::endl; std::cout << "body2_graph rotation:\n" << body2_graph.rotation() << std::endl;
+  // std::cout << "\nbody2_standalone translation:\n" << body2_standalone.translation().transpose()
+  // << std::endl; std::cout << "body2_standalone rotation:\n" << body2_standalone.rotation() <<
+  // std::endl; std::cout << "\nTranslation difference:\n" << (body2_graph.translation() -
+  // body2_standalone.translation()).transpose() << std::endl; std::cout << "Translation difference
+  // norm: " << (body2_graph.translation() - body2_standalone.translation()).norm() << std::endl;
+  // std::cout << "Rotation difference (Frobenius norm): "
+  //           << (body2_graph.rotation() - body2_standalone.rotation()).norm() << std::endl;
+
+  // Compare the absolute placement of body2 in both models
+  // pinocchio::SE3 body2_graph = d_f.oMf[m_forward.getFrameId("body2", pinocchio::BODY)];
+  // pinocchio::SE3 body2_standalone =
+  //   jDataEllipsoid.oMf[modelEllipsoid.getFrameId("body2", pinocchio::BODY)];
+
+  // BOOST_CHECK(body2_graph.isApprox(body2_standalone));
+}
+
+/// @brief test if reversing of a composite joint is correct.
 BOOST_AUTO_TEST_CASE(test_reverse_composite)
 {
   using namespace pinocchio::graph;

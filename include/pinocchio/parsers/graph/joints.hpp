@@ -161,6 +161,30 @@ namespace pinocchio
       }
     };
 
+    struct JointEllipsoid
+    {
+      double radius_a = 0.01;
+      double radius_b = 0.01;
+      double radius_c = 0.01;
+
+      static constexpr int nq = 3;
+      static constexpr int nv = 3;
+
+      JointEllipsoid() = default;
+      JointEllipsoid(const double r_a, const double r_b, const double r_c)
+      : radius_a(r_a)
+      , radius_b(r_b)
+      , radius_c(r_c)
+      {
+      }
+
+      bool operator==(const JointEllipsoid & other) const
+      {
+        return radius_a == other.radius_a && radius_b == other.radius_b
+               && radius_c == other.radius_c;
+      }
+    };
+
     struct JointTranslation
     {
       static constexpr int nq = 3;
@@ -241,6 +265,7 @@ namespace pinocchio
       JointFreeFlyer,
       JointSpherical,
       JointSphericalZYX,
+      JointEllipsoid,
       JointTranslation,
       JointPlanar,
       JointHelical,

@@ -160,10 +160,7 @@ struct init<pinocchio::JointModelEllipsoidTpl<Scalar, Options>>
   static JointModel run()
   {
     JointModel jmodel(
-      static_cast<Scalar>(0.01), 
-      static_cast<Scalar>(0.02),
-      static_cast<Scalar>(0.03)
-      );
+      static_cast<Scalar>(0.01), static_cast<Scalar>(0.02), static_cast<Scalar>(0.03));
 
     jmodel.setIndexes(0, 0, 0);
     return jmodel;

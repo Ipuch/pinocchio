@@ -111,6 +111,12 @@ namespace pinocchio
         .def_readonly("nq", &JointSphericalZYX::nq, "Number of configuration variables.")
         .def_readonly("nv", &JointSphericalZYX::nv, "Number of tangent variables.");
 
+      bp::class_<JointEllipsoid>(
+        "JointEllipsoid", "Represents an ellipsoidal joint.",
+        bp::init<>(bp::args("self"), "Default constructor."))
+        .def_readonly("nq", &JointEllipsoid::nq, "Number of configuration variables.")
+        .def_readonly("nv", &JointEllipsoid::nv, "Number of tangent variables.");
+
       bp::class_<JointTranslation>(
         "JointTranslation", "Represents a translation joint.",
         bp::init<>(bp::args("self"), "Default constructor."))
