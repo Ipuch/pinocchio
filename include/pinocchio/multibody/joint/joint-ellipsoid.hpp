@@ -324,93 +324,90 @@ namespace pinocchio
       return res;
     }
 
-  template<typename ConfigVector>
-  Vector3 computeTranslations(
-    const typename Eigen::MatrixBase<ConfigVector> & qs) const
-  {
-    Scalar c0, s0;
-    SINCOS(qs(0), &s0, &c0);
-    Scalar c1, s1;
-    SINCOS(qs(1), &s1, &c1);
+    template<typename ConfigVector>
+    Vector3 computeTranslations(const typename Eigen::MatrixBase<ConfigVector> & qs) const
+    {
+      Scalar c0, s0;
+      SINCOS(qs(0), &s0, &c0);
+      Scalar c1, s1;
+      SINCOS(qs(1), &s1, &c1);
 
-    return computeTranslations(s0, c0, s1, c1);
-  }
+      return computeTranslations(s0, c0, s1, c1);
+    }
 
-  Vector3 computeTranslations(
-    const Scalar & s0,
-    const Scalar & c0,
-    const Scalar & s1,
-    const Scalar & c1) const
-  {
-    Scalar nx, ny, nz;
-    nx = s1;
-    ny = -s0 * c1;
-    nz = c0 * c1;
+    Vector3 computeTranslations(
+      const Scalar & s0, const Scalar & c0, const Scalar & s1, const Scalar & c1) const
+    {
+      Scalar nx, ny, nz;
+      nx = s1;
+      ny = -s0 * c1;
+      nz = c0 * c1;
 
-    return Vector3(radius_a * nx, radius_b * ny, radius_c * nz);
-  }
+      return Vector3(radius_a * nx, radius_b * ny, radius_c * nz);
+    }
 
-  template<typename ConfigVector, typename TangentVector>
-  Vector3 computeTranslationVelocities(
-     const typename Eigen::MatrixBase<ConfigVector> & qs,
-     const typename Eigen::MatrixBase<TangentVector> & vs) const
-  {
-    Scalar c0, s0;
-    SINCOS(qs(0), &s0, &c0);
-    Scalar c1, s1;
-    SINCOS(qs(1), &s1, &c1);
+    template<typename ConfigVector, typename TangentVector>
+    Vector3 computeTranslationVelocities(
+      const typename Eigen::MatrixBase<ConfigVector> & qs,
+      const typename Eigen::MatrixBase<TangentVector> & vs) const
+    {
+      Scalar c0, s0;
+      SINCOS(qs(0), &s0, &c0);
+      Scalar c1, s1;
+      SINCOS(qs(1), &s1, &c1);
 
-    return computeTranslationVelocities(s0, c0, s1, c1, vs(0), vs(1));
-  }
+      return computeTranslationVelocities(s0, c0, s1, c1, vs(0), vs(1));
+    }
 
-  Vector3 computeTranslationVelocities(
-    const Scalar & s0,
-    const Scalar & c0,
-    const Scalar & s1,
-    const Scalar & c1,
-    const Scalar & q0dot,
-    const Scalar & q1dot) const
-  {
-    Vector3 v;
-    v(0) = radius_a * c1 * q1dot;
-    v(1) = radius_b * (- c0 * c1 * q0dot +  s0 * s1 * q1dot);
-    v(2) = radius_c * (-s0 * c1 * q0dot - c0 * s1 * q1dot);
-    return v;
-  }
+    Vector3 computeTranslationVelocities(
+      const Scalar & s0,
+      const Scalar & c0,
+      const Scalar & s1,
+      const Scalar & c1,
+      const Scalar & q0dot,
+      const Scalar & q1dot) const
+    {
+      Vector3 v;
+      v(0) = radius_a * c1 * q1dot;
+      v(1) = radius_b * (-c0 * c1 * q0dot + s0 * s1 * q1dot);
+      v(2) = radius_c * (-s0 * c1 * q0dot - c0 * s1 * q1dot);
+      return v;
+    }
 
-  template<typename ConfigVector, typename TangentVector, typename TangentVector2>
-  Vector3 computeTranslationAccelerations(
-    const typename Eigen::MatrixBase<ConfigVector> & qs,
-    const typename Eigen::MatrixBase<TangentVector> & vs,
-    const typename Eigen::MatrixBase<TangentVector2> & as) const
-  {
-    Vector3 a;
-    Scalar c0, s0;
-    SINCOS(qs(0), &s0, &c0);
-    Scalar c1, s1;
-    SINCOS(qs(1), &s1, &c1);
-    return computeTranslationAccelerations(
-      s0, c0, s1, c1, vs(0), vs(1), as(0), as(1));
-  }
+    template<typename ConfigVector, typename TangentVector, typename TangentVector2>
+    Vector3 computeTranslationAccelerations(
+      const typename Eigen::MatrixBase<ConfigVector> & qs,
+      const typename Eigen::MatrixBase<TangentVector> & vs,
+      const typename Eigen::MatrixBase<TangentVector2> & as) const
+    {
+      Vector3 a;
+      Scalar c0, s0;
+      SINCOS(qs(0), &s0, &c0);
+      Scalar c1, s1;
+      SINCOS(qs(1), &s1, &c1);
+      return computeTranslationAccelerations(s0, c0, s1, c1, vs(0), vs(1), as(0), as(1));
+    }
 
-  Vector3 computeTranslationAccelerations(
-    const Scalar & s0,
-    const Scalar & c0,
-    const Scalar & s1,
-    const Scalar & c1,
-    const Scalar & q0dot,
-    const Scalar & q1dot,
-    const Scalar & q0ddot,
-    const Scalar & q1ddot) const
-  {
-    Vector3 a;
-    a(0) = radius_a * (-s1 * q1dot * q1dot + c1 * q1ddot);
-    a(1) = radius_b * (s0 * c1 * q0dot * q0dot + c0 * s1 * q0dot * q1dot - c0 * c1 * q0ddot
-                     + c0 * s1 * q1dot * q0dot + s0 * c1 * q1dot * q1dot + s0 * s1 * q1ddot);
-    a(2) = radius_c * (-c0 * c1 * q0dot * q0dot + s0 * s1 * q0dot * q1dot - s0 * c1 * q0ddot
-                     + s0 * s1 * q1dot * q0dot - c0 * c1 * q1dot * q1dot - c0 * s1 * q1ddot);
-    return a;
-  }
+    Vector3 computeTranslationAccelerations(
+      const Scalar & s0,
+      const Scalar & c0,
+      const Scalar & s1,
+      const Scalar & c1,
+      const Scalar & q0dot,
+      const Scalar & q1dot,
+      const Scalar & q0ddot,
+      const Scalar & q1ddot) const
+    {
+      Vector3 a;
+      a(0) = radius_a * (-s1 * q1dot * q1dot + c1 * q1ddot);
+      a(1) =
+        radius_b
+        * (s0 * c1 * q0dot * q0dot + c0 * s1 * q0dot * q1dot - c0 * c1 * q0ddot + c0 * s1 * q1dot * q0dot + s0 * c1 * q1dot * q1dot + s0 * s1 * q1ddot);
+      a(2) =
+        radius_c
+        * (-c0 * c1 * q0dot * q0dot + s0 * s1 * q0dot * q1dot - s0 * c1 * q0ddot + s0 * s1 * q1dot * q0dot - c0 * c1 * q1dot * q1dot - c0 * s1 * q1ddot);
+      return a;
+    }
 
     void computeMotionSubspace(
       const Scalar & s0,

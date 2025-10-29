@@ -38,185 +38,6 @@ void addJointAndBody(
 
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
 
-BOOST_AUTO_TEST_CASE(vsFreeFlyer)
-{
-  using namespace pinocchio;
-  typedef SE3::Vector3 Vector3;
-  typedef Eigen::Matrix<double, 6, 1> Vector6;
-  typedef Eigen::Matrix<double, 7, 1> VectorFF;
-  typedef SE3::Matrix3 Matrix3;
-
-  Model modelEllipsoid, modelFreeflyer;
-
-  Inertia inertia(1., Vector3(0.5, 0., 0.0), Matrix3::Identity());
-  SE3 pos(1);
-  pos.translation() = SE3::LinearType(1., 0., 0.);
-
-  addJointAndBody(modelEllipsoid, JointModelEllipsoid(1, 2, 3), 0, pos, "ellipsoid", inertia);
-  addJointAndBody(modelFreeflyer, JointModelFreeFlyer(), 0, pos, "free-flyer", inertia);
-
-  Data dataEllipsoid(modelEllipsoid);
-
-  Eigen::VectorXd q = Eigen::VectorXd::Ones(modelEllipsoid.nq);
-  Eigen::VectorXd v = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-
-  forwardKinematics(modelEllipsoid, dataEllipsoid, q, v);
-
-  Eigen::VectorXd tauEllipsoid = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-
-  Eigen::VectorXd aEllipsoid = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-
-  // ForwardDynamics == aba
-  Eigen::VectorXd aAbaEllipsoid =
-    aba(modelEllipsoid, dataEllipsoid, q, v, tauEllipsoid, Convention::WORLD);
-
-  // Calculer jdata.S().transpose() * data.f[i]
-}
-
-// BOOST_AUTO_TEST_CASE(vsSphericalZYX)
-// {
-//   using namespace pinocchio;
-//   typedef SE3::Vector3 Vector3;
-//   typedef Eigen::Matrix<double, 6, 1> Vector6;
-//   typedef SE3::Matrix3 Matrix3;
-
-//   // Build models using ModelGraph to enable configuration conversion
-//   graph::ModelGraph g;
-//   Inertia inertia(1., Vector3(0.5, 0., 0.0), Matrix3::Identity());
-//   SE3 pos(1);
-//   pos.translation() = SE3::LinearType(1., 0., 0.);
-
-//   g.addBody("root_body", inertia);
-//   g.addBody("end_body", inertia);
-
-//   // Create SphericalZYX joint (uses ZYX Euler angles)
-//   g.addJoint(
-//     "spherical_joint",
-//     graph::JointSphericalZYX(),
-//     "root_body",
-//     SE3::Identity(),
-//     "end_body",
-//     pos);
-
-//   // Build SphericalZYX model
-//   const auto forward_build = graph::buildModelWithBuildInfo(g, "root_body", SE3::Identity());
-//   const Model & modelSphericalZYX = forward_build.model;
-//   Data dataSphericalZYX(modelSphericalZYX);
-
-//   Eigen::VectorXd q_zyx(3);
-//   q_zyx << 0.5, 1.2, -0.8;
-//   Eigen::VectorXd v_zyx(3);
-//   v_zyx << 0.1, -0.3, 0.7;
-//   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx);
-//   updateFramePlacements(modelSphericalZYX, dataSphericalZYX);
-
-//   auto end_index = modelSphericalZYX.getFrameId("end_body", BODY);
-//   auto X_end = dataSphericalZYX.oMf[end_index];
-//   const auto backward_build =
-//     graph::buildModelWithBuildInfo(g, "end_body", X_end);
-
-//   const Model & XYZlacirehpSledom = backward_build.model;
-
-//   // Create converter from SphericalZYX to Ellipsoid
-//   auto converter = graph::createConverter(
-//     modelSphericalZYX, XYZlacirehpSledom, forward_build.build_info, backward_build.build_info);
-
-//   // Convert to Ellipsoid configuration
-//   Eigen::VectorXd q_xyz = Eigen::VectorXd::Zero(XYZlacirehpSledom.nq);
-//   Eigen::VectorXd v_xyz = Eigen::VectorXd::Zero(XYZlacirehpSledom.nv);
-//   converter.convertConfigurationVector(q_zyx, q_xyz);
-//   converter.convertTangentVector(q_zyx, v_zyx, v_xyz);
-
-//   std::cout << "\n=== Configuration Conversion ===" << std::endl;
-//   std::cout << "q_zyx (SphericalZYX): " << q_zyx.transpose() << std::endl;
-//   std::cout << "q_xyz (converted): " << q_xyz.transpose() << std::endl;
-//   std::cout << "v_zyx (SphericalZYX): " << v_zyx.transpose() << std::endl;
-//   std::cout << "v_xyz (converted): " << v_xyz.transpose() << std::endl;
-
-//   Model modelEllipsoid;
-//   addJointAndBody(modelEllipsoid, JointModelEllipsoid(0, 0, 0), 0, pos, "ellipsoid", inertia);
-//   Data dataEllipsoid(modelEllipsoid);
-
-//   // Test forward kinematics with converted configurations
-//   forwardKinematics(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz);
-//   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx);
-
-//   // Check that the transformations are identical
-//   std::cout << "\n=== Forward Kinematics Comparison ===" << std::endl;
-//   std::cout << "oMi (Ellipsoid):\n" << dataEllipsoid.oMi[1] << std::endl;
-//   std::cout << "oMi (SphericalZYX):\n" << dataSphericalZYX.oMi[1] << std::endl;
-//   BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataSphericalZYX.oMi[1]));
-
-//   BOOST_CHECK(dataEllipsoid.liMi[1].isApprox(dataSphericalZYX.liMi[1]));
-
-//   // Check that velocities match
-//   BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataSphericalZYX.v[1].toVector()));
-
-//   // Test computeAllTerms
-//   computeAllTerms(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz);
-//   computeAllTerms(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx);
-
-//   BOOST_CHECK(dataEllipsoid.Ycrb[1].matrix().isApprox(dataSphericalZYX.Ycrb[1].matrix()));
-
-//   BOOST_CHECK(dataEllipsoid.f[1].toVector().isApprox(dataSphericalZYX.f[1].toVector()));
-
-//   BOOST_CHECK(dataEllipsoid.nle.isApprox(dataSphericalZYX.nle));
-
-//   BOOST_CHECK(dataEllipsoid.com[0].isApprox(dataSphericalZYX.com[0]));
-
-//   // Test inverse dynamics (RNEA)
-//   Eigen::VectorXd aEllipsoid = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-//   Eigen::VectorXd aSphericalZYX = Eigen::VectorXd::Ones(modelSphericalZYX.nv);
-
-//   Eigen::VectorXd tauEllipsoid = rnea(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz, aEllipsoid);
-//   Eigen::VectorXd tauSphericalZYX = rnea(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx,
-//   aSphericalZYX);
-
-//   BOOST_CHECK(tauEllipsoid.isApprox(tauSphericalZYX));
-
-//   // Test forward dynamics (ABA)
-//   Eigen::VectorXd tau = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-
-//   Eigen::VectorXd aAbaEllipsoid = aba(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz, tau,
-//   Convention::WORLD); Eigen::VectorXd aAbaSphericalZYX = aba(modelSphericalZYX, dataSphericalZYX,
-//   q_zyx, v_zyx, tau, Convention::WORLD);
-
-//   BOOST_CHECK(aAbaEllipsoid.isApprox(aAbaSphericalZYX));
-
-//   // Test with LOCAL convention
-//   aAbaEllipsoid = aba(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz, tau, Convention::LOCAL);
-//   aAbaSphericalZYX = aba(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx, tau,
-//   Convention::LOCAL);
-
-//   BOOST_CHECK(aAbaEllipsoid.isApprox(aAbaSphericalZYX));
-
-//   // Test with different configurations
-//   q_zyx << 0.2, -0.5, 1.1;
-//   v_zyx << 0.3, 0.1, -0.2;
-
-//   converter.convertConfigurationVector(q_zyx, q_xyz);
-//   converter.convertTangentVector(q_zyx, v_zyx, v_xyz);
-
-//   forwardKinematics(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz);
-//   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx);
-
-//   BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataSphericalZYX.oMi[1]));
-
-//   BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataSphericalZYX.v[1].toVector()));
-
-//   tauEllipsoid = rnea(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz, aEllipsoid);
-//   tauSphericalZYX = rnea(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx, aSphericalZYX);
-
-//   BOOST_CHECK(tauEllipsoid.isApprox(tauSphericalZYX));
-
-//   aAbaEllipsoid = aba(modelEllipsoid, dataEllipsoid, q_xyz, v_xyz, tau, Convention::WORLD);
-//   aAbaSphericalZYX = aba(modelSphericalZYX, dataSphericalZYX, q_zyx, v_zyx, tau,
-//   Convention::WORLD);
-
-//   BOOST_CHECK(aAbaEllipsoid.isApprox(aAbaSphericalZYX));
-
-// }
-
 BOOST_AUTO_TEST_CASE(vsSphericalZYX)
 {
   using namespace pinocchio;
@@ -246,9 +67,6 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_s, qd_s);
   const Matrix3 & R = dataSphericalZYX.oMi[1].rotation();
   const Motion & spatial_vel_zyx = dataSphericalZYX.v[1];
-
-  std::cout << "\n=== Target Rotation Matrix (from ZYX) ===" << std::endl;
-  std::cout << R << std::endl;
 
   // Extract XYZ Euler angles from the rotation matrix
   // For XYZ convention: R = Rx(x) * Ry(y) * Rz(z)
@@ -302,8 +120,7 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   Eigen::Vector3d w_e = S_e * qd_e;
 
   BOOST_CHECK(w_s.isApprox(w_e));
-  std::cout << "✓ Angular velocities from joint velocities match" << std::endl;
-
+  
   // Compute forward kinematics with the converted configurations
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_e, qd_e);
 
@@ -319,21 +136,17 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
 
   BOOST_CHECK(jDataEllipsoidFK.S.matrix().isApprox(jDataEllipsoidFK2.S.matrix()));
   BOOST_CHECK(jDataEllipsoidFK.S.matrix().isApprox(jDataEllipsoidFK3.S.matrix()));
-  std::cout << "✓ Motion subspace matrices match for the three calc(...) methods" << std::endl;
 
   JointDataSphericalZYX jDataSphereFK = jmodel_s.createData();
   jmodel_s.calc(jDataSphereFK, q_s, qd_s);
 
-  std::cout << "\n=== Joint-frame velocities (S * v) ===" << std::endl;
+  // Joint-frame velocities (S * v)
   Eigen::Matrix<double, 6, 1> joint_vel_e = jDataEllipsoidFK.S.matrix() * qd_e;
   Eigen::Matrix<double, 6, 1> manual_vel = jDataEllipsoidFK.S.matrix() * jDataEllipsoidFK.joint_v;
   Eigen::Matrix<double, 6, 1> joint_vel_s = jDataSphereFK.S.matrix() * qd_s;
 
   BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataSphericalZYX.v[1].toVector()));
-  std::cout << "✓ Spatial velocities match" << std::endl;
-
   BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataSphericalZYX.oMi[1]));
-  std::cout << "✓ Full oMi[1] matches" << std::endl;
 
   Matrix3 Sdot_e = jDataEllipsoidFK.Sdot.matrix().bottomRows<3>(); // Angular part
 
@@ -348,31 +161,134 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   Eigen::Vector3d wdot_s = jDataSphereFK.c.angular() + S_s * qdotdot_s;
   Eigen::Vector3d wdot_e = Sdot_e * qd_e + S_e * qdotdot_e;
   BOOST_CHECK(wdot_s.isApprox(wdot_e));
-  std::cout << "✓ Angular accelerations from joint accelerations match" << std::endl;
 
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_e, qd_e, qdotdot_e);
   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataSphericalZYX.a[1].toVector()));
 
-  // Test RNEA (Recursive Newton-Euler Algorithm)
-  std::cout << "\n=== RNEA Test ===" << std::endl;
-
+  // Test RNEA (Recursive Newton-Euler Algorithm) - spatial forces should match
   rnea(modelEllipsoid, dataEllipsoid, q_e, qd_e, qdotdot_e);
   rnea(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataSphericalZYX.f[1]));
-  std::cout << "✓ RNEA f match" << std::endl;
 
   // Test ABA (Articulated-Body Algorithm)
-  std::cout << "\n=== ABA Test ===" << std::endl;
   Eigen::VectorXd tau = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-
   Eigen::VectorXd aAbaEllipsoid =
     aba(modelEllipsoid, dataEllipsoid, q_e, qd_e, dataEllipsoid.tau, Convention::WORLD);
 
   BOOST_CHECK(dataEllipsoid.ddq.isApprox(qdotdot_e));
-  std::cout << "✓ ABA computed accelerations match input accelerations" << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
+{
+  using namespace pinocchio;
+  typedef SE3::Vector3 Vector3;
+  typedef SE3::Matrix3 Matrix3;
+
+  // Ellipsoid parameters
+  double radius_a = 2.0;
+  double radius_b = 1.5;
+  double radius_c = 1.0;
+
+  Inertia inertia = Inertia::Identity();
+  SE3 pos = SE3::Identity();
+
+  // Create Ellipsoid model
+  Model modelEllipsoid;
+  JointModelEllipsoid jointModelEllipsoid(radius_a, radius_b, radius_c);
+  addJointAndBody(modelEllipsoid, jointModelEllipsoid, 0, pos, "ellipsoid", inertia);
+
+  // Create Composite model (Tx, Ty, Tz, Rx, Ry, Rz)
+  Model modelComposite;
+  JointModelComposite jComposite;
+  jComposite.addJoint(JointModelPX());
+  jComposite.addJoint(JointModelPY());
+  jComposite.addJoint(JointModelPZ());
+  jComposite.addJoint(JointModelRX());
+  jComposite.addJoint(JointModelRY());
+  jComposite.addJoint(JointModelRZ());
+  addJointAndBody(modelComposite, jComposite, 0, pos, "composite", inertia);
+
+  Data dataEllipsoid(modelEllipsoid);
+  Data dataComposite(modelComposite);
+
+  // Test positions of ellispoid vs composite
+  Eigen::VectorXd q_ellipsoid(3);
+  q_ellipsoid << 1.0, 2.0, 3.0; // rx, ry, rz
+  Eigen::Vector3d t = jointModelEllipsoid.computeTranslations(q_ellipsoid);
+  Eigen::VectorXd q_composite(6);
+  q_composite << t, q_ellipsoid;
+
+  forwardKinematics(modelEllipsoid, dataEllipsoid, q_ellipsoid);
+  forwardKinematics(modelComposite, dataComposite, q_composite);
+
+  BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataComposite.oMi[1]));
+
+  // Velocity test
+  Eigen::VectorXd qdot_ellipsoid(3);
+  qdot_ellipsoid << 0.1, 0.2, 0.3;
+
+  Eigen::Vector3d v_linear =
+    jointModelEllipsoid.computeTranslationVelocities(q_ellipsoid, qdot_ellipsoid);
+  Eigen::VectorXd qdot_composite(6);
+  qdot_composite << v_linear, qdot_ellipsoid;
+
+  forwardKinematics(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid);
+  forwardKinematics(modelComposite, dataComposite, q_composite, qdot_composite);
+
+  BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataComposite.v[1].toVector()));
+
+  // Acceleration test
+  Eigen::VectorXd qddot_ellipsoid(3);
+  qddot_ellipsoid << 0.01, 0.02, 0.03;
+  Eigen::Vector3d a_linear = jointModelEllipsoid.computeTranslationAccelerations(
+    q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
+  Eigen::VectorXd qddot_composite(6);
+  qddot_composite << a_linear, qddot_ellipsoid;
+
+  forwardKinematics(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
+  forwardKinematics(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
+
+  BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataComposite.a[1].toVector()));
+
+  // Test RNEA - spatial forces and torques should match
+  rnea(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
+  rnea(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
+  BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataComposite.f[1]));
+
+  // Need joint data to get both motion subspaces S_comp and S_ell
+  JointDataComposite jdata_c = jComposite.createData();
+  jComposite.setIndexes(0, 0, 0);
+  jComposite.calc(jdata_c, q_composite, qdot_composite);
+
+  JointDataEllipsoid jdata_e = jointModelEllipsoid.createData();
+  jointModelEllipsoid.setIndexes(0, 0, 0);
+  jointModelEllipsoid.calc(jdata_e, q_ellipsoid, qdot_ellipsoid);
+
+  const Eigen::Matrix<double, 6, 6> S_comp = jdata_c.S.matrix(); // 6x6 (Tx,Ty,Tz,Rx,Ry,Rz)
+  const Eigen::Matrix<double, 6, 3> S_ell = jdata_e.S.matrix();  // 6x3 (ellipsoid)
+
+  // Compute the Jacobian mapping from ellipsoid generalized velocities to composite ones:
+  // qdot_comp = J * qdot_ell with J = (S_comp^T * S_comp)^-1 * S_comp^T * S_ell
+  Eigen::MatrixXd J = (S_comp.transpose() * S_comp).ldlt().solve(S_comp.transpose() * S_ell);
+
+  // Now map the torques back (dual mapping)
+  // τ_ell = J^T * τ_comp
+  Eigen::VectorXd tau_proj = J.transpose() * dataComposite.tau;
+
+  // Check the numerical match
+  BOOST_CHECK_MESSAGE(
+    dataEllipsoid.tau.isApprox(tau_proj, 1e-6),
+    "Projected composite torques do not match ellipsoid torques.\n"
+      << "Expected: " << dataEllipsoid.tau.transpose() << "\nGot: " << tau_proj.transpose());
+
+  // Test ABA (Articulated-Body Algorithm)
+  Eigen::VectorXd aAbaEllipsoid = aba(
+    modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, dataEllipsoid.tau,
+    Convention::WORLD);
+  BOOST_CHECK(aAbaEllipsoid.isApprox(qddot_ellipsoid));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
