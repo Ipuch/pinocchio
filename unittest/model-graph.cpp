@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE(test_reverse_spherical_zyx)
     d_f.oMf[m_forward.getFrameId("body1", pinocchio::BODY)]));
 }
 
-/// @brief test if reversing of a composite joint is correct.
+/// @brief test if reversing of an ellipsoid joint is correct.
 BOOST_AUTO_TEST_CASE(test_reverse_ellipsoid)
 {
   using namespace pinocchio::graph;

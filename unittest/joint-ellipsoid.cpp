@@ -36,6 +36,59 @@ void addJointAndBody(
   model.appendBodyToJoint(idx, Y);
 }
 
+/// \brief Compute Sdot (motion subspace derivative) via finite differences
+template<typename JointModel>
+Eigen::Matrix<double, 6, JointModel::NV> finiteDiffSdot(
+  const JointModel & jmodel,
+  typename JointModel::JointDataDerived & jdata,
+  const typename JointModel::ConfigVector_t & q,
+  const typename JointModel::TangentVector_t & v,
+  double eps = 1e-8)
+{
+  typedef typename LieGroup<JointModel>::type LieGroupType;
+  typedef typename JointModel::ConfigVector_t ConfigVector_t;
+  typedef typename JointModel::TangentVector_t TangentVector_t;
+
+  const Eigen::DenseIndex nv = jmodel.nv();
+
+  Eigen::Matrix<double, 6, JointModel::NV> Sdot_fd;
+  Sdot_fd.setZero();
+
+  ConfigVector_t q_integrated(q);
+  TangentVector_t v_integrate(nv);
+  v_integrate.setZero();
+
+  for (Eigen::DenseIndex k = 0; k < nv; ++k)
+  {
+    // Integrate along kth direction
+    v_integrate[k] = eps;
+    q_integrated = LieGroupType().integrate(q, v_integrate);
+
+    // Compute S at q + eps * e_k
+    jmodel.calc(jdata, q_integrated);
+    const Eigen::Matrix<double, 6, JointModel::NV> S_plus = jdata.S.matrix();
+
+    // Integrate in negative direction
+    v_integrate[k] = -eps;
+    q_integrated = LieGroupType().integrate(q, v_integrate);
+
+    // Compute S at q - eps * e_k
+    jmodel.calc(jdata, q_integrated);
+    const Eigen::Matrix<double, 6, JointModel::NV> S_minus = jdata.S.matrix();
+
+    // Compute dS/dq_k via central differences
+    Eigen::Matrix<double, 6, JointModel::NV> dS_dqk = (S_plus - S_minus) / (2.0 * eps);
+
+    // Accumulate: Sdot += (dS/dq_k) * v_k
+    Sdot_fd += dS_dqk * v[k];
+
+    // Reset
+    v_integrate[k] = 0.;
+  }
+
+  return Sdot_fd;
+}
+
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
 
 BOOST_AUTO_TEST_CASE(vsSphericalZYX)
@@ -71,31 +124,8 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   // Extract XYZ Euler angles from the rotation matrix
   // For XYZ convention: R = Rx(x) * Ry(y) * Rz(z)
   // We need to solve for x, y, z
-
   Eigen::Vector3d q_e;
-
-  // From the Ellipsoid rotation matrix structure:
-  // R(0,2) = sin(y)
-  // R(1,2) = -sin(x)*cos(y)
-  // R(2,2) = cos(x)*cos(y)
-
-  double sy = R(0, 2);
-  q_e(1) = std::asin(sy); // y angle
-
-  double cy = std::cos(q_e(1));
-
-  if (std::abs(cy) > 1e-6)
-  {
-    // Not at singularity
-    q_e(0) = std::atan2(-R(1, 2) / cy, R(2, 2) / cy); // x angle
-    q_e(2) = std::atan2(-R(0, 1) / cy, R(0, 0) / cy); // z angle
-  }
-  else
-  {
-    // Gimbal lock - choose x = 0
-    q_e(0) = 0.0;
-    q_e(2) = std::atan2(R(1, 0), R(1, 1));
-  }
+  q_e = R.eulerAngles(0, 1, 2); // XYZ convention
 
   // Get the motion subspace matrices (which give us the Jacobians)
   JointModelSphericalZYX jmodel_s;
@@ -120,7 +150,7 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   Eigen::Vector3d w_e = S_e * qd_e;
 
   BOOST_CHECK(w_s.isApprox(w_e));
-  
+
   // Compute forward kinematics with the converted configurations
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_e, qd_e);
 
@@ -291,4 +321,36 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   BOOST_CHECK(aAbaEllipsoid.isApprox(qddot_ellipsoid));
 }
 
+BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
+{
+  using namespace pinocchio;
+
+  // Ellipsoid parameters
+  double radius_a = 2.0;
+  double radius_b = 1.5;
+  double radius_c = 1.0;
+
+  JointModelEllipsoid jmodel(radius_a, radius_b, radius_c);
+  jmodel.setIndexes(0, 0, 0);
+
+  JointDataEllipsoid jdata = jmodel.createData();
+
+  // Test configuration and velocity
+  typedef JointModelEllipsoid::ConfigVector_t ConfigVector_t;
+  typedef JointModelEllipsoid::TangentVector_t TangentVector_t;
+  typedef LieGroup<JointModelEllipsoid>::type LieGroupType;
+
+  ConfigVector_t q = LieGroupType().random();
+  TangentVector_t v = TangentVector_t::Random();
+
+  // Compute analytical Sdot
+  const double eps = 1e-8;
+  jmodel.calc(jdata, q, v);
+  const Eigen::Matrix<double, 6, 3> Sdot_ref = jdata.Sdot.matrix();
+
+  // Compute Sdot via finite differences using helper function
+  const Eigen::Matrix<double, 6, 3> Sdot_fd = finiteDiffSdot(jmodel, jdata, q, v, eps);
+
+  BOOST_CHECK(Sdot_ref.isApprox(Sdot_fd, sqrt(eps)));
+}
 BOOST_AUTO_TEST_SUITE_END()

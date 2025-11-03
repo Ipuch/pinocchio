@@ -12,7 +12,7 @@
 #include "pinocchio/math/matrix.hpp"
 #include "pinocchio/spatial/inertia.hpp"
 #include "pinocchio/spatial/skew.hpp"
-#include "pinocchio/multibody/joint-motion-subspace.hpp" // because we are dense.
+#include "pinocchio/multibody/joint-motion-subspace.hpp"
 
 namespace pinocchio
 {
@@ -452,28 +452,23 @@ namespace pinocchio
       const Scalar c1s2 = c1 * s2;
 
       Scalar S_11, S_21, S_31, S_12, S_22, S_32;
-      // S_11 = c1 * (-radius_b * c0 * (c0 * s2 + c2 * s0 * s1) - radius_c * s0 * (- c0 * c2 * s1 +
-      // s0 * s2));
+
       S_11 = dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1)
              + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2);
-      // S_21 = c1 * (radius_b * c0 * (- c0 * c2 + s0 * s1 * s2) - radius_c * s0 * (c0 * s1 * s2 +
-      // c2 * s0));
+
       S_21 = -dndoty_dqdot0 * radius_b * (-c0 * c2 + s0 * s1 * s2)
              + dndotz_dqdot0 * radius_c * (c0 * s1 * s2 + c2 * s0);
-      // S_31 = c0 * c1 * c1 * s0 * (radius_b - radius_c);
+
       S_31 = c1 * (-dndoty_dqdot0 * radius_b * s0 + dndotz_dqdot0 * radius_c * c0);
 
-      // S_12 = radius_a * c1c2 * c1 + radius_b * s0 * s1 * (c0 * s2 + c2 * s0 * s1) - radius_c * c0
-      // * s1 * (- c0 * c2 * s1 + s0 * s2);
       S_12 = dndotx_dqdot1 * radius_a * c1 * c2
              + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1)
              + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2);
-      // S_22 = - radius_a * c1s2 * c1 - radius_b * s0 * s1 * (- c0 * c2 + s0 * s1 * s2) - radius_c
-      // * c0 * s1 * (c0 * s1 * s2 + c2 * s0);
+
       S_22 = -dndotx_dqdot1 * radius_a * c1 * s2
              - dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2)
              + dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0);
-      // S_32 = c1 * s1 * (radius_a - radius_b * s0 * s0 - radius_c * c0 * c0);
+
       S_32 = dndotx_dqdot1 * radius_a * s1 - dndoty_dqdot1 * radius_b * c1 * s0
              + dndotz_dqdot1 * radius_c * c0 * c1;
 
