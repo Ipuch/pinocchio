@@ -617,64 +617,41 @@ BOOST_AUTO_TEST_CASE(test_reverse_spherical_zyx)
     d_f.oMf[m_forward.getFrameId("body1", pinocchio::BODY)]));
 }
 
-/// @brief test if reversing of an ellipsoid joint is correct.
-BOOST_AUTO_TEST_CASE(test_reverse_ellipsoid)
+/// @brief test if an ellipsoid joint is correct after building
+BOOST_AUTO_TEST_CASE(test_ellipsoid)
 {
   using namespace pinocchio::graph;
 
-  ModelGraph g = buildReversableModelGraph(JointEllipsoid(0.01, 0.01, 0.01));
-  ///////////////// Model
-  BOOST_CHECK_THROW(buildModel(g, "body2", pinocchio::SE3::Identity()), std::invalid_argument);
+  ModelGraph g = buildReversableModelGraph(JointEllipsoid(0.01, 0.02, 0.03));
 
   //////////////////////////////////// Forward model
   pinocchio::Model m_forward = buildModel(g, "body1", pinocchio::SE3::Identity());
   pinocchio::Data d_f(m_forward);
-  // config vector forward model Ellipsoid
+  // config vector forward model
   Eigen::Vector3d q(m_forward.nq);
   q << M_PI / 4, M_PI, M_PI / 2;
   pinocchio::framesForwardKinematics(m_forward, d_f, q);
 
   // Create a standalone model with the EXACT same structure as the graph model
   pinocchio::Model modelEllipsoid;
-  pinocchio::SE3 poseBody1 =
-    pinocchio::SE3(Eigen::Matrix3d::Identity(), Eigen::Vector3d(2., 0., 0.));
-  pinocchio::SE3 poseBody2 =
-    pinocchio::SE3(Eigen::Matrix3d::Identity(), Eigen::Vector3d(0., 3., 0.));
   pinocchio::Model::JointIndex idx;
 
-  pinocchio::JointModelEllipsoid jModelEllipsoid(0.01, 0.01, 0.01);
-  idx = modelEllipsoid.addJoint(0, jModelEllipsoid, poseBody1, "ellipsoid");
-  std::cout << "Added joint ellipsoid with index: " << idx << std::endl;
+  pinocchio::SE3 poseBody1(Eigen::Matrix3d::Identity(), Eigen::Vector3d(2., 0., 0.));
+  pinocchio::SE3 poseBody2(Eigen::Matrix3d::Identity(), Eigen::Vector3d(0., 3., 0.));
 
-  pinocchio::Inertia body2_inertia = Inertia::Identity();
-  modelEllipsoid.appendBodyToJoint(idx, body2_inertia, poseBody2);
-  // pinocchio::FrameIndex frame_id = modelEllipsoid.addBodyFrame("body2", -1, poseBody2);
+  idx = modelEllipsoid.addJoint(
+    0, pinocchio::JointModelEllipsoid(0.01, 0.02, 0.03), poseBody1, "ellipsoid");
 
-  // This line is not working yet.
-  // pinocchio::FrameIndex frame_id = modelEllipsoid.addBodyFrame("body2", idx, poseBody2);
+  modelEllipsoid.appendBodyToJoint(
+    idx,
+    pinocchio::Inertia(4., pinocchio::Inertia::Vector3(0., 2., 0.), pinocchio::Symmetric3::Zero()),
+    poseBody2);
 
-  // pinocchio::Data jDataEllipsoid(modelEllipsoid);
-  // pinocchio::framesForwardKinematics(modelEllipsoid, jDataEllipsoid, q);
+  pinocchio::Data data_model(modelEllipsoid);
+  pinocchio::framesForwardKinematics(modelEllipsoid, data_model, q);
 
-  // DEBUG: Print both transforms
-  std::cout << "nb frames in new model: " << modelEllipsoid.nframes << std::endl;
-  // std::cout << "=== DEBUG test_reverse_ellipsoid ===" << std::endl;
-  // std::cout << "body2_graph translation:\n" << body2_graph.translation().transpose() <<
-  // std::endl; std::cout << "body2_graph rotation:\n" << body2_graph.rotation() << std::endl;
-  // std::cout << "\nbody2_standalone translation:\n" << body2_standalone.translation().transpose()
-  // << std::endl; std::cout << "body2_standalone rotation:\n" << body2_standalone.rotation() <<
-  // std::endl; std::cout << "\nTranslation difference:\n" << (body2_graph.translation() -
-  // body2_standalone.translation()).transpose() << std::endl; std::cout << "Translation difference
-  // norm: " << (body2_graph.translation() - body2_standalone.translation()).norm() << std::endl;
-  // std::cout << "Rotation difference (Frobenius norm): "
-  //           << (body2_graph.rotation() - body2_standalone.rotation()).norm() << std::endl;
-
-  // Compare the absolute placement of body2 in both models
-  // pinocchio::SE3 body2_graph = d_f.oMf[m_forward.getFrameId("body2", pinocchio::BODY)];
-  // pinocchio::SE3 body2_standalone =
-  //   jDataEllipsoid.oMf[modelEllipsoid.getFrameId("body2", pinocchio::BODY)];
-
-  // BOOST_CHECK(body2_graph.isApprox(body2_standalone));
+  // Compare the joint transformations
+  BOOST_CHECK(SE3isApprox(data_model.oMi[idx], d_f.oMi[m_forward.getJointId("body1_to_body2")]));
 }
 
 /// @brief test if reversing of a composite joint is correct.
