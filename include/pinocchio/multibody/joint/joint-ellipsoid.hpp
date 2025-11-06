@@ -142,10 +142,10 @@ namespace pinocchio
     }
 
     JointModelEllipsoidTpl()
+    : radius_a(Scalar(0.01))
+    , radius_b(Scalar(0.01))
+    , radius_c(Scalar(0.01))
     {
-      radius_a = Scalar(0.01);
-      radius_b = Scalar(0.01);
-      radius_c = Scalar(0.01);
     }
 
     explicit JointModelEllipsoidTpl(const Scalar & a, const Scalar & b, const Scalar & c)
@@ -177,12 +177,7 @@ namespace pinocchio
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
 
-      // common operations
-      Scalar c1c2, c1s2;
-      c1c2 = c1 * c2;
-      c1s2 = c1 * s2;
-
-      data.M.rotation() << c1c2, -c1s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
+      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
         -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
 
       Scalar nx, ny, nz;
@@ -209,10 +204,6 @@ namespace pinocchio
       SINCOS(data.joint_q(1), &s1, &c1);
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
-
-      Scalar c1c2, c1s2;
-      c1c2 = c1 * c2;
-      c1s2 = c1 * s2;
 
       Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
       dndotx_dqdot1 = c1;
@@ -250,12 +241,7 @@ namespace pinocchio
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
 
-      // common operations
-      Scalar c1c2, c1s2;
-      c1c2 = c1 * c2;
-      c1s2 = c1 * s2;
-
-      data.M.rotation() << c1c2, -c1s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
+      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
         -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
 
       Scalar nx, ny, nz;
@@ -418,9 +404,6 @@ namespace pinocchio
       const Scalar & c2,
       JointDataDerived & data) const
     {
-      // Common operations
-      const Scalar c1c2 = c1 * c2;
-      const Scalar c1s2 = c1 * s2;
 
       Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
       dndotx_dqdot1 = c1;
@@ -447,10 +430,6 @@ namespace pinocchio
       const Scalar & dndotz_dqdot1,
       JointDataDerived & data) const
     {
-      // Common operations
-      const Scalar c1c2 = c1 * c2;
-      const Scalar c1s2 = c1 * s2;
-
       Scalar S_11, S_21, S_31, S_12, S_22, S_32;
 
       S_11 = dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1)
@@ -472,8 +451,8 @@ namespace pinocchio
       S_32 = dndotx_dqdot1 * radius_a * s1 - dndoty_dqdot1 * radius_b * c1 * s0
              + dndotz_dqdot1 * radius_c * c0 * c1;
 
-      data.S.matrix() << S_11, S_12, Scalar(0), S_21, S_22, Scalar(0), S_31, S_32, Scalar(0), c1c2,
-        s2, Scalar(0), -c1s2, c2, Scalar(0), s1, Scalar(0), Scalar(1);
+      data.S.matrix() << S_11, S_12, Scalar(0), S_21, S_22, Scalar(0), S_31, S_32, Scalar(0),
+        c1 * c2, s2, Scalar(0), -c1 * s2, c2, Scalar(0), s1, Scalar(0), Scalar(1);
     }
     void computeMotionSubspaceDerivative(
       const Scalar & s0,
@@ -505,13 +484,13 @@ namespace pinocchio
       Scalar d_dndoty_dqdot0_dq0 = s0 * c1; // dndoty_dqdot0 = - c0 * c1;
       Scalar d_dndoty_dqdot0_dq1 = c0 * s1;
 
-      Scalar d_dndoty_dqdot1_dq0 = c0 * s1; // dndoty_dqdot1 = s0 * s1;
+      // Scalar d_dndoty_dqdot1_dq0 = c0 * s1; // dndoty_dqdot1 = s0 * s1;
       Scalar d_dndoty_dqdot1_dq1 = s0 * c1;
 
       Scalar d_dndotz_dqdot0_dq0 = -c1 * c0; // dndotz_dqdot0 = - c1 * s0;
       Scalar d_dndotz_dqdot0_dq1 = s0 * s1;
 
-      Scalar d_dndotz_dqdot1_dq0 = s0 * s1; // dndotz_dqdot1 = - c0 * s1;
+      // Scalar d_dndotz_dqdot1_dq0 = s0 * s1; // dndotz_dqdot1 = - c0 * s1;
       Scalar d_dndotz_dqdot1_dq1 = -c0 * c1;
 
       // Upper part (translation)
