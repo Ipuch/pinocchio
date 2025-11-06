@@ -696,7 +696,7 @@ BOOST_AUTO_TEST_CASE(test_reverse_composite)
     d_f.oMf[m_forward.getFrameId("body1", pinocchio::BODY)]));
 }
 
-/// @brief test if reversing of a composite joint is correct.
+/// @brief test if reversing of a planar joint is correct.
 BOOST_AUTO_TEST_CASE(test_reverse_planar)
 {
   using namespace pinocchio::graph;
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE(test_reverse_planar)
     d_f.oMf[m_forward.getFrameId("body1", pinocchio::BODY)]));
 }
 
-/// @brief test if reversing of a composite joint is correct.
+/// @brief test if reversing of a mimic joint is correct.
 BOOST_AUTO_TEST_CASE(test_reverse_mimic)
 {
   using namespace pinocchio::graph;
