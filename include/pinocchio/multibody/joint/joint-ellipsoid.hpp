@@ -94,6 +94,8 @@ namespace pinocchio
     JointDataEllipsoidTpl()
     : joint_q(ConfigVector_t::Zero())
     , joint_v(TangentVector_t::Zero())
+    , S()
+    , Sdot()
     , M(Transformation_t::Identity())
     , v(Motion_t::Zero())
     , c(Bias_t::Zero())
