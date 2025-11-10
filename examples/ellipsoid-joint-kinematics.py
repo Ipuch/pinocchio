@@ -1,18 +1,12 @@
 """
 Ellipsoid Joint Kinematics Example
 
-This example demonstrates the use of the ellipsoid joint in Pinocchio.
-The ellipsoid joint constrains a point to move on the surface of an ellipsoid
-while allowing full 3D rotational freedom (SO(3)).
-
 The joint has 3 DOF corresponding to 3 rotation angles that determine both:
 - The position on the ellipsoid surface
 - The orientation of the body
 
-This is useful for modeling:
-- Joints with coupled translation and rotation
-- Contact points on ellipsoidal surfaces
-- Biomechanical joints with ellipsoidal constraints
+Note: the joint is not purely normal to the ellipsoid surface; it translates along a ellipsoid,
+    but the rotational part is "normal" to a sphere.
 """
 
 import pinocchio as pin
@@ -69,6 +63,47 @@ def create_ellipsoid_robot(radius_a=0.5, radius_b=0.3, radius_c=0.2):
     body_placement.translation = np.array([0.0, 0.0, 0.2])
     
     model.appendBodyToJoint(joint_id, inertia, body_placement)
+    
+    return model
+
+def create_composite_model():
+    """Create a model with a composite joint (6 DOF: Tx, Ty, Tz, Rx, Ry, Rz)."""
+    model = pin.Model()
+    
+    # Create composite joint with 3 prismatic + 3 revolute
+    jcomposite = pin.JointModelComposite()
+    jcomposite.addJoint(pin.JointModelPX())
+    jcomposite.addJoint(pin.JointModelPY())
+    jcomposite.addJoint(pin.JointModelPZ())
+    jcomposite.addJoint(pin.JointModelRX())
+    jcomposite.addJoint(pin.JointModelRY())
+    jcomposite.addJoint(pin.JointModelRZ())
+    
+    joint_id = model.addJoint(
+        0,
+        jcomposite,
+        pin.SE3.Identity(),
+        "composite"
+    )
+
+    body_placement = pin.SE3.Identity()
+    body_placement.translation = np.array([0.0, 0.0, 0.2])
+    
+
+    # Add a body with some inertia
+    mass = 1.0
+    lever = np.array([0.0, 0.0, 0.1])
+    inertia = pin.Inertia(
+        mass,
+        lever,
+        np.diag([0.01, 0.01, 0.01])
+    )
+
+    model.appendBodyToJoint(
+        joint_id,
+        inertia,
+        body_placement,
+    )
     
     return model
 
@@ -132,6 +167,8 @@ def compute_dynamics_example():
     q = np.array([np.pi/6, np.pi/4, np.pi/3])
     v = np.array([0.1, 0.2, 0.3])
     a = np.array([0.01, 0.02, 0.03])
+
+    pin.forwardKinematics(model, data, q, v, a)
     
     print(f"\nConfiguration: q = {q}")
     print(f"Velocity:      v = {v}")
@@ -142,24 +179,34 @@ def compute_dynamics_example():
     #   but they are not pure torques due to the joint's nature and because the last
     #   The last step of rnea is tau = S.T * f
     #   where S is the joint motion subspace, and f the spatial force of the joint
-    #   So the resulting tau vector contains generalized forces that
+    #   So the resulting tau vector contains three generalized forces that
     #   include contributions from both rotational and translational effects.
     tau = pin.rnea(model, data, q, v, a)
     print(f"\nRequired torques (RNEA): τ = {tau}")
 
-    # separate the generalized forces for interpretability from the spatial forces
-    S = data.joints[1].S
-    f = np.array(data.f[1])
-    pure_torques = S[3:, :].T @ f[3:]  # Extract rotational part
-    translations = S[:3, :].T @ f[:3]  # Extract translational part
-    print(f"  Pure rotational torques: {pure_torques}")
-    print(f"  Translational forces: {translations}")
+    # For example tau[0] is a combination of S_11(q)* f_x + S_21(q)* f_y + S_31(q)* f_z + S_41(q)* τ_x + S_51(q)* τ_y + S_61(q)* τ_z
 
-    # add them back to recover the original tau
-    tau_reconstructed = np.zeros(3)
-    tau_reconstructed += pure_torques
-    tau_reconstructed += translations
-    print(f"  Reconstructed τ: {tau_reconstructed}")
+    # Create composite model for comparison of joint spatial forces `data.f[1]`
+    composite_model = create_composite_model()
+    composite_data = composite_model.createData()
+    
+    q_composite = np.zeros(6)
+    q_composite[3:] = q  # Set only rotational part
+    q_composite[:3] = data.oMi[1].translation  # Set translation to current position on ellipsoid
+    
+    v_composite = np.zeros(6)
+    v_composite[3:] = v
+    v_composite[:3] = np.array(data.v[1])[:3]  # Set linear velocity part
+
+    a_composite = np.zeros(6)
+    a_composite[3:] = a
+    a_composite[:3] = np.array(data.a[1])[:3]  # Set linear acceleration part
+
+    tau_composite = pin.rnea(composite_model, composite_data, q_composite, v_composite, a_composite)
+    print(f"\nComposite joint required torques (RNEA): τ = {tau_composite}")
+    print(f"\nComparison of spatial forces at the joint:")
+    print(f"  - Ellipsoid joint spatial force: f = {data.f[1]} ")
+    print(f"  - Composite joint spatial force: f = {composite_data.f[1]} ")
 
 
 
@@ -277,7 +324,7 @@ def visualize_ellipsoid_motion():
             q = np.array([
                 0.0,
                 0.0,
-                0.2 * np.cos(angle)
+                3.14 * np.cos(angle)
             ])
             viz.display(q)
             time.sleep(dt)
