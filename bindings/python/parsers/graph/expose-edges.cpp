@@ -122,7 +122,8 @@ namespace pinocchio
 
       bp::class_<JointEllipsoid>(
         "JointEllipsoid", "Represents an ellipsoidal joint.",
-        bp::init<double, double, double>(bp::args("self", "radius_a", "radius_b", "radius_c"), "Constructor with radii."))
+        bp::init<double, double, double>(
+          bp::args("self", "radius_a", "radius_b", "radius_c"), "Constructor with radii."))
         .def_readwrite(
           "radius_a", &JointEllipsoid::radius_a, "Semi-axis length in the x direction.")
         .def_readwrite(

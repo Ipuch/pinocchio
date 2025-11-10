@@ -63,8 +63,7 @@ namespace pinocchio
     inline bp::class_<JointDataEllipsoid> &
     expose_joint_data<JointDataEllipsoid>(bp::class_<JointDataEllipsoid> & cl)
     {
-      return cl
-        .add_property("S", &JointDataEllipsoid::S)
+      return cl.add_property("S", &JointDataEllipsoid::S)
         .add_property("Sdot", &JointDataEllipsoid::M)
         .add_property("StU", &JointDataEllipsoid::StU)
         .add_property("joint_q", &JointDataEllipsoid::joint_q)
