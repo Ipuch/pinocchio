@@ -150,7 +150,7 @@ namespace pinocchio
     {
     }
 
-    explicit JointModelEllipsoidTpl(const Scalar & a, const Scalar & b, const Scalar & c)
+    JointModelEllipsoidTpl(const Scalar & a, const Scalar & b, const Scalar & c)
     : radius_a(a)
     , radius_b(b)
     , radius_c(c)
