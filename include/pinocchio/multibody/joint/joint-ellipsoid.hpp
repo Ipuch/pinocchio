@@ -313,7 +313,7 @@ namespace pinocchio
     }
 
     template<typename ConfigVector>
-    Vector3 computeTranslations(const typename Eigen::MatrixBase<ConfigVector> & qs) const
+    Vector3 computeTranslations(const Eigen::MatrixBase<ConfigVector> & qs) const
     {
       Scalar c0, s0;
       SINCOS(qs(0), &s0, &c0);
