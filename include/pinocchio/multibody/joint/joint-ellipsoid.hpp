@@ -336,8 +336,8 @@ namespace pinocchio
 
     template<typename ConfigVector, typename TangentVector>
     Vector3 computeTranslationVelocities(
-      const typename Eigen::MatrixBase<ConfigVector> & qs,
-      const typename Eigen::MatrixBase<TangentVector> & vs) const
+      const Eigen::MatrixBase<ConfigVector> & qs,
+      const Eigen::MatrixBase<TangentVector> & vs) const
     {
       Scalar c0, s0;
       SINCOS(qs(0), &s0, &c0);
