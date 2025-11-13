@@ -68,6 +68,25 @@ namespace pinocchio
     typedef _Scalar Scalar;
   };
 
+  /// \brief Ellipsoid joint - constrains motion to ellipsoid surface with 3-DOF.
+  ///
+  /// The configuration space uses three angles (q₀, q₁, q₂) representing:
+  /// - Rotation about the x-axis
+  /// - Rotation about the y-axis 
+  /// - Spin about the "normal" direction
+  ///
+  /// The joint position on the ellipsoid surface is computed as:
+  /// \f$ \mathbf{p} = (a \sin q_1, -b \sin q_0 \cos q_1, c \cos q_0 \cos q_1) \f$
+  ///
+  /// where \f$ a, b, c \f$ are the radii along the x, y, z axes respectively.
+  ///
+ /// \note For non-spherical ellipsoids, the third rotation axis is only approximately
+  /// normal to the surface. It corresponds to the normal of an equivalent sphere while
+  /// the translation follows the true ellipsoid surface. The "normal" direction is
+  /// truly normal only when all radii are equal (sphere case).
+  ///
+  /// \sa Seth et al., "Minimal formulation of joint motion for biomechanisms,"
+  /// Nonlinear Dynamics 62(1):291-303, 2010.
   template<typename _Scalar, int _Options>
   struct JointDataEllipsoidTpl : public JointDataBase<JointDataEllipsoidTpl<_Scalar, _Options>>
   {
@@ -140,7 +159,8 @@ namespace pinocchio
     {
       return JointDataDerived();
     }
-
+    
+    /// @brief Default constructor. Creates a sphere (0.01, 0.01, 0.01).
     JointModelEllipsoidTpl()
     : radius_a(Scalar(0.01))
     , radius_b(Scalar(0.01))
@@ -148,6 +168,10 @@ namespace pinocchio
     {
     }
 
+    /// @brief Constructor with specified radii.
+    /// @param a Semi-axis length along x-direction
+    /// @param b Semi-axis length along y-direction
+    /// @param c Semi-axis length along z-direction
     JointModelEllipsoidTpl(const Scalar & a, const Scalar & b, const Scalar & c)
     : radius_a(a)
     , radius_b(b)
@@ -165,6 +189,11 @@ namespace pinocchio
       return {true, true, true};
     }
 
+    /// @brief Computes the spatial transformation M(q) from joint configuration.
+    /// @param[in] c0, s0 Cosine and sine of q[0]
+    /// @param[in] c1, s1 Cosine and sine of q[1]
+    /// @param[in] c2, s2 Cosine and sine of q[2]
+    /// @param[out] data Joint data where M will be stored
     void computeSpatialTransform(
       Scalar c0, Scalar s0, Scalar c1, Scalar s1, Scalar c2, Scalar s2, JointDataDerived & data) const
     {
@@ -372,6 +401,7 @@ namespace pinocchio
       // clang-format on
     }
     
+    /// @brief Computes the bias acceleration c(q, v) = Sdot(q)·v.
     template<typename ConfigVector, typename TangentVector>
     void computeBiais(
       JointDataDerived & data,
