@@ -37,9 +37,7 @@ void addJointAndBody(
 
 /// \brief Compute motion subspace derivative Sdot analytically for JointModelEllipsoid
 Eigen::Matrix<double, 6, 3> computeMotionSubspaceDerivative(
-  const JointModelEllipsoid & jmodel,
-  const Eigen::VectorXd & qs,
-  const Eigen::VectorXd & vs)
+  const JointModelEllipsoid & jmodel, const Eigen::VectorXd & qs, const Eigen::VectorXd & vs)
 {
   double c0, s0;
   SINCOS(qs(0), &s0, &c0);
@@ -75,95 +73,42 @@ Eigen::Matrix<double, 6, 3> computeMotionSubspaceDerivative(
   double d_dndotz_dqdot1_dq1 = -c0 * c1;
 
   // Translational part (rows 1-3)
-  double Sdot_11 =
-    qdot0
-      * (-dndoty_dqdot0 * radius_b * (-c0 * c2 * s1 + s0 * s2) 
-         + dndotz_dqdot0 * radius_c * (c0 * s2 + c2 * s0 * s1) 
-         + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq0 
-         + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq0)
-    + qdot1
-        * (dndoty_dqdot0 * radius_b * c1 * c2 * s0 
-           - dndotz_dqdot0 * radius_c * c0 * c1 * c2 
-           + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 
-           + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
-    - qdot2
-        * (dndoty_dqdot0 * radius_b * (-c0 * c2 + s0 * s1 * s2) 
-           - dndotz_dqdot0 * radius_c * (c0 * s1 * s2 + c2 * s0));
+  double
+    Sdot_11 =
+      qdot0
+        * (-dndoty_dqdot0 * radius_b * (-c0 * c2 * s1 + s0 * s2) + dndotz_dqdot0 * radius_c * (c0 * s2 + c2 * s0 * s1) + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq0 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq0)
+      + qdot1 * (dndoty_dqdot0 * radius_b * c1 * c2 * s0 - dndotz_dqdot0 * radius_c * c0 * c1 * c2 + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
+      - qdot2
+          * (dndoty_dqdot0 * radius_b * (-c0 * c2 + s0 * s1 * s2) - dndotz_dqdot0 * radius_c * (c0 * s1 * s2 + c2 * s0));
 
-  double Sdot_12 =
-    qdot0
-      * (-dndoty_dqdot1 * radius_b * (-c0 * c2 * s1 + s0 * s2) 
-         + dndotz_dqdot1 * radius_c * (c0 * s2 + c2 * s0 * s1) 
-         + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 
-         + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
-    + qdot1 
-        * (-dndotx_dqdot1 * radius_a * c2 * s1 
-           + dndoty_dqdot1 * radius_b * c1 * c2 * s0 
-           - dndotz_dqdot1 * radius_c * c0 * c1 * c2 
-           + radius_a * c1 * c2 * d_dndotx_dqdot1_dq1 
-           + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot1_dq1 
-           + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot1_dq1) 
-    - qdot2 
-        * (dndotx_dqdot1 * radius_a * c1 * s2 
-           + dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2) 
-           - dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0));
+  double
+    Sdot_12 =
+      qdot0 * (-dndoty_dqdot1 * radius_b * (-c0 * c2 * s1 + s0 * s2) + dndotz_dqdot1 * radius_c * (c0 * s2 + c2 * s0 * s1) + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1) + qdot1 * (-dndotx_dqdot1 * radius_a * c2 * s1 + dndoty_dqdot1 * radius_b * c1 * c2 * s0 - dndotz_dqdot1 * radius_c * c0 * c1 * c2 + radius_a * c1 * c2 * d_dndotx_dqdot1_dq1 + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot1_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot1_dq1)
+      - qdot2
+          * (dndotx_dqdot1 * radius_a * c1 * s2 + dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2) - dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0));
 
-  double Sdot_21 =
-    -qdot0
-      * (dndoty_dqdot0 * radius_b * (c0 * s1 * s2 + c2 * s0) 
-         + dndotz_dqdot0 * radius_c * (-c0 * c2 + s0 * s1 * s2) 
-         + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq0 
-         - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq0)
-    - qdot1
-        * (dndoty_dqdot0 * radius_b * c1 * s0 * s2 
-           - dndotz_dqdot0 * radius_c * c0 * c1 * s2 
-           + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 
-           - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
-    - qdot2
-        * (dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1) 
-           + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2));
+  double
+    Sdot_21 = -qdot0 * (dndoty_dqdot0 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot0 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq0 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq0) - qdot1 * (dndoty_dqdot0 * radius_b * c1 * s0 * s2 - dndotz_dqdot0 * radius_c * c0 * c1 * s2 + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
+              - qdot2
+                  * (dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2));
 
-  double Sdot_22 =
-    -qdot0
-      * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) 
-         + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) 
-         + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 
-         - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
-    + qdot1 
-        * (dndotx_dqdot1 * radius_a * s1 * s2 
-           - dndoty_dqdot1 * radius_b * c1 * s0 * s2 
-           + dndotz_dqdot1 * radius_c * c0 * c1 * s2 
-           - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 
-           - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 
-           + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1) 
-    - qdot2 
-        * (dndotx_dqdot1 * radius_a * c1 * c2 
-           + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) 
-           + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
+  double
+    Sdot_22 =
+      -qdot0 * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1) + qdot1 * (dndotx_dqdot1 * radius_a * s1 * s2 - dndoty_dqdot1 * radius_b * c1 * s0 * s2 + dndotz_dqdot1 * radius_c * c0 * c1 * s2 - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1)
+      - qdot2
+          * (dndotx_dqdot1 * radius_a * c1 * c2 + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
 
   double Sdot_31 =
     -qdot0 * c1
-      * (dndoty_dqdot0 * radius_b * c0 
-         + dndotz_dqdot0 * radius_c * s0 
-         + radius_b * s0 * d_dndoty_dqdot0_dq0 
-         - radius_c * c0 * d_dndotz_dqdot0_dq0)
+      * (dndoty_dqdot0 * radius_b * c0 + dndotz_dqdot0 * radius_c * s0 + radius_b * s0 * d_dndoty_dqdot0_dq0 - radius_c * c0 * d_dndotz_dqdot0_dq0)
     + qdot1
-        * (-c1 * (radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1) 
-           + s1 * (dndoty_dqdot0 * radius_b * s0 - dndotz_dqdot0 * radius_c * c0));
+        * (-c1 * (radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1) + s1 * (dndoty_dqdot0 * radius_b * s0 - dndotz_dqdot0 * radius_c * c0));
 
   double Sdot_32 =
     -qdot0 * c1
-      * (dndoty_dqdot1 * radius_b * c0 
-         + dndotz_dqdot1 * radius_c * s0 
-         + radius_b * s0 * d_dndoty_dqdot0_dq1 
-         - radius_c * c0 * d_dndotz_dqdot0_dq1)
+      * (dndoty_dqdot1 * radius_b * c0 + dndotz_dqdot1 * radius_c * s0 + radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1)
     + qdot1
-        * (dndotx_dqdot1 * radius_a * c1 
-           + dndoty_dqdot1 * radius_b * s0 * s1 
-           - dndotz_dqdot1 * radius_c * c0 * s1 
-           + radius_a * s1 * d_dndotx_dqdot1_dq1 
-           - radius_b * c1 * s0 * d_dndoty_dqdot1_dq1 
-           + radius_c * c0 * c1 * d_dndotz_dqdot1_dq1);
+        * (dndotx_dqdot1 * radius_a * c1 + dndoty_dqdot1 * radius_b * s0 * s1 - dndotz_dqdot1 * radius_c * c0 * s1 + radius_a * s1 * d_dndotx_dqdot1_dq1 - radius_b * c1 * s0 * d_dndoty_dqdot1_dq1 + radius_c * c0 * c1 * d_dndotz_dqdot1_dq1);
 
   // Angular part (rows 4-6)
   double Sdot_41 = -(qdot1 * c2 * s1 + qdot2 * c1 * s2);
@@ -175,12 +120,8 @@ Eigen::Matrix<double, 6, 3> computeMotionSubspaceDerivative(
 
   // Build and return 6x3 matrix
   Eigen::Matrix<double, 6, 3> Sdot;
-  Sdot << Sdot_11, Sdot_12, 0.0,
-          Sdot_21, Sdot_22, 0.0,
-          Sdot_31, Sdot_32, 0.0,
-          Sdot_41, Sdot_42, 0.0,
-          Sdot_51, Sdot_52, 0.0,
-          Sdot_61, 0.0,     0.0;
+  Sdot << Sdot_11, Sdot_12, 0.0, Sdot_21, Sdot_22, 0.0, Sdot_31, Sdot_32, 0.0, Sdot_41, Sdot_42,
+    0.0, Sdot_51, Sdot_52, 0.0, Sdot_61, 0.0, 0.0;
 
   return Sdot;
 }
@@ -238,7 +179,6 @@ Eigen::Matrix<double, 6, JointModel::NV> finiteDiffSdot(
   return Sdot_fd;
 }
 
-
 SE3::Vector3 computeTranslations(const JointModelEllipsoid & jmodel, const Eigen::VectorXd & qs)
 {
   double c0, s0;
@@ -255,9 +195,7 @@ SE3::Vector3 computeTranslations(const JointModelEllipsoid & jmodel, const Eigen
 }
 
 SE3::Vector3 computeTranslationVelocities(
-  const JointModelEllipsoid & jmodel,
-  const Eigen::VectorXd & qs,
-  const Eigen::VectorXd & vs)
+  const JointModelEllipsoid & jmodel, const Eigen::VectorXd & qs, const Eigen::VectorXd & vs)
 {
   double c0, s0;
   SINCOS(qs(0), &s0, &c0);
@@ -271,17 +209,17 @@ SE3::Vector3 computeTranslationVelocities(
   return v;
 }
 
-SE3:: Vector3 computeTranslationAccelerations(
+SE3::Vector3 computeTranslationAccelerations(
   const JointModelEllipsoid & jmodel,
   const Eigen::VectorXd & qs,
   const Eigen::VectorXd & vs,
-  const Eigen::VectorXd & as) 
+  const Eigen::VectorXd & as)
 {
   double c0, s0;
   SINCOS(qs(0), &s0, &c0);
   double c1, s1;
   SINCOS(qs(1), &s1, &c1);
-  SE3:: Vector3 a;
+  SE3::Vector3 a;
   a(0) = jmodel.radius_a * (-s1 * vs(1) * vs(1) + c1 * as(1));
   a(1) =
     jmodel.radius_b
@@ -291,7 +229,6 @@ SE3:: Vector3 computeTranslationAccelerations(
     * (-c0 * c1 * vs(0) * vs(0) + s0 * s1 * vs(0) * vs(1) - s0 * c1 * as(0) + s0 * s1 * vs(1) * vs(0) - c0 * c1 * vs(1) * vs(1) - c0 * s1 * as(1));
   return a;
 }
-
 
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
 
@@ -389,8 +326,7 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   // S_s * qdotdot_s + c_s.angular() = Sdot_e * qd_e + S_e * qdotdot_e
   // Solving for qdotdot_e:
   // S_e * qdotdot_e =  c_s.angular()+ S_s * qdotdot_s - Sdot_e * qd_e
-  Eigen::Vector3d qdotdot_e =
-    S_e.inverse() * (S_s * qdotdot_s + jDataSphereFK.c.angular() - c_e);
+  Eigen::Vector3d qdotdot_e = S_e.inverse() * (S_s * qdotdot_s + jDataSphereFK.c.angular() - c_e);
 
   // Verify angular accelerations match
   Eigen::Vector3d wdot_s = jDataSphereFK.c.angular() + S_s * qdotdot_s;
@@ -409,7 +345,8 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataSphericalZYX.f[1]));
 }
 
-/// @brief Test the equivalence between JointModelEllipsoid and a Composite joint (Tx, Ty, Tz, Rx, Ry, Rz)
+/// @brief Test the equivalence between JointModelEllipsoid and a Composite joint (Tx, Ty, Tz, Rx,
+/// Ry, Rz)
 BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
 {
   using namespace pinocchio;
@@ -459,7 +396,8 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   Eigen::VectorXd qdot_ellipsoid(3);
   qdot_ellipsoid << 0.1, 0.2, 0.3;
 
-  Eigen::Vector3d v_linear =  computeTranslationVelocities(jointModelEllipsoid, q_ellipsoid, qdot_ellipsoid);
+  Eigen::Vector3d v_linear =
+    computeTranslationVelocities(jointModelEllipsoid, q_ellipsoid, qdot_ellipsoid);
   Eigen::VectorXd qdot_composite(6);
   qdot_composite << v_linear, qdot_ellipsoid;
 
@@ -471,8 +409,8 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   // Acceleration test
   Eigen::VectorXd qddot_ellipsoid(3);
   qddot_ellipsoid << 0.01, 0.02, 0.03;
-  Eigen::Vector3d a_linear = computeTranslationAccelerations(jointModelEllipsoid,
-    q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
+  Eigen::Vector3d a_linear = computeTranslationAccelerations(
+    jointModelEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   Eigen::VectorXd qddot_composite(6);
   qddot_composite << a_linear, qddot_ellipsoid;
 
@@ -550,11 +488,11 @@ BOOST_AUTO_TEST_CASE(RNEAvsABA)
     aba(model, data_aba, q, v, tau_rnea, Convention::WORLD);
 
     BOOST_CHECK_MESSAGE(
-      a.isApprox(data_aba.ddq, 1e-9),
-      "RNEA and ABA inconsistent at trial " << trial << "\n"
-        << "Configuration: " << q.transpose() << "\n"
-        << "Expected: " << a.transpose() << "\n"
-        << "Got: " << data_aba.ddq.transpose());
+      a.isApprox(data_aba.ddq, 1e-9), "RNEA and ABA inconsistent at trial "
+                                        << trial << "\n"
+                                        << "Configuration: " << q.transpose() << "\n"
+                                        << "Expected: " << a.transpose() << "\n"
+                                        << "Got: " << data_aba.ddq.transpose());
   }
 }
 

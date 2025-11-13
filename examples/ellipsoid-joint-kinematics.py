@@ -5,12 +5,12 @@ The joint has 3 DOF corresponding to 3 rotation angles that determine both:
 - The position on the ellipsoid surface
 - The orientation of the body
 
-Note: the joint is not purely normal to the ellipsoid surface; it translates along a ellipsoid,
-    but the rotational part is "normal" to a sphere.
+Note: the joint is not purely normal to the ellipsoid surface;
+    it translates along a ellipsoid, but the rotational part is "normal" to a sphere.
 """
 
-import pinocchio as pin
 import numpy as np
+import pinocchio as pin
 
 # For visualization (optional)
 try:
@@ -107,7 +107,7 @@ def compute_kinematics_example():
     model = create_ellipsoid_robot(radius_a, radius_b, radius_c)
     data = model.createData()
 
-    print(f"\nEllipsoid parameters:")
+    print("\nEllipsoid parameters:")
     print(f"  radius_a (x-axis): {radius_a}")
     print(f"  radius_b (y-axis): {radius_b}")
     print(f"  radius_c (z-axis): {radius_c}")
@@ -163,7 +163,8 @@ def compute_dynamics_example():
     print(f"Acceleration:  a = {a}")
 
     # Compute dynamics with RNEA (Recursive Newton-Euler Algorithm)
-    # Important Note: the generalized forces dimension matches the number of DOFs (3 for ellipsoid joint)
+    # Important Note:
+    #   the generalized forces dimension matches the number of DOFs
     #   but they are not pure torques due to the joint's nature and because the last
     #   The last step of rnea is tau = S.T * f
     #   where S is the joint motion subspace, and f the spatial force of the joint
@@ -172,7 +173,9 @@ def compute_dynamics_example():
     tau = pin.rnea(model, data, q, v, a)
     print(f"\nRequired torques (RNEA): τ = {tau}")
 
-    # For example tau[0] is a combination of S_11(q)* f_x + S_21(q)* f_y + S_31(q)* f_z + S_41(q)* τ_x + S_51(q)* τ_y + S_61(q)* τ_z
+    # For example tau[0] is a combination of
+    # S_11(q)* f_x + S_21(q)* f_y + S_31(q)* f_z
+    #   + S_41(q)* τ_x + S_51(q)* τ_y + S_61(q)* τ_z
 
     # Create composite model for comparison of joint spatial forces `data.f[1]`
     composite_model = create_composite_model()
@@ -196,7 +199,7 @@ def compute_dynamics_example():
         composite_model, composite_data, q_composite, v_composite, a_composite
     )
     print(f"\nComposite joint required torques (RNEA): τ = {tau_composite}")
-    print(f"\nComparison of spatial forces at the joint:")
+    print("\nComparison of spatial forces at the joint:")
     print(f"  - Ellipsoid joint spatial force: f = {data.f[1]} ")
     print(f"  - Composite joint spatial force: f = {composite_data.f[1]} ")
 
@@ -296,7 +299,8 @@ def visualize_ellipsoid_motion():
 
             if i % 50 == 0:
                 print(
-                    f"  Frame {i}/500 - Configuration: [{q[0]:.3f}, {q[1]:.3f}, {q[2]:.3f}]"
+                    f"  Frame {i}/500 - Configuration: \n"
+                    f"    [{q[0]:.3f}, {q[1]:.3f}, {q[2]:.3f}]"
                 )
 
         # create extra motion that slides along the principal axes q0

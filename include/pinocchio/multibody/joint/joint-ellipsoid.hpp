@@ -72,7 +72,7 @@ namespace pinocchio
   ///
   /// The configuration space uses three angles (q₀, q₁, q₂) representing:
   /// - Rotation about the x-axis
-  /// - Rotation about the y-axis 
+  /// - Rotation about the y-axis
   /// - Spin about the "normal" direction
   ///
   /// The joint position on the ellipsoid surface is computed as:
@@ -80,7 +80,7 @@ namespace pinocchio
   ///
   /// where \f$ a, b, c \f$ are the radii along the x, y, z axes respectively.
   ///
- /// \note For non-spherical ellipsoids, the third rotation axis is only approximately
+  /// \note For non-spherical ellipsoids, the third rotation axis is only approximately
   /// normal to the surface. It corresponds to the normal of an equivalent sphere while
   /// the translation follows the true ellipsoid surface. The "normal" direction is
   /// truly normal only when all radii are equal (sphere case).
@@ -159,7 +159,7 @@ namespace pinocchio
     {
       return JointDataDerived();
     }
-    
+
     /// @brief Default constructor. Creates a sphere (0.01, 0.01, 0.01).
     JointModelEllipsoidTpl()
     : radius_a(Scalar(0.01))
@@ -195,11 +195,12 @@ namespace pinocchio
     /// @param[in] c2, s2 Cosine and sine of q[2]
     /// @param[out] data Joint data where M will be stored
     void computeSpatialTransform(
-      Scalar c0, Scalar s0, Scalar c1, Scalar s1, Scalar c2, Scalar s2, JointDataDerived & data) const
+      Scalar c0, Scalar s0, Scalar c1, Scalar s1, Scalar c2, Scalar s2, JointDataDerived & data)
+      const
     {
       // clang-format off
       data.M.rotation() << c1 * c2                , -c1 * s2                , s1      ,
-                           c0 * s2 + c2 * s0 * s1 , c0 * c2 - s0 * s1 * s2  ,-c1 * s0 , 
+                           c0 * s2 + c2 * s0 * s1 , c0 * c2 - s0 * s1 * s2  ,-c1 * s0 ,
                           -c0 * c2 * s1 + s0 * s2 , c0 * s1 * s2 + c2 * s0  , c0 * c1;
       // clang-format on
       Scalar nx, ny, nz;
@@ -208,7 +209,6 @@ namespace pinocchio
       nz = c0 * c1;
 
       data.M.translation() << radius_a * nx, radius_b * ny, radius_c * nz;
-
     }
 
     template<typename ConfigVector>
@@ -223,7 +223,7 @@ namespace pinocchio
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
 
-      computeSpatialTransform(c0,s0,c1,s1,c2,s2, data);
+      computeSpatialTransform(c0, s0, c1, s1, c2, s2, data);
 
       computeMotionSubspace(s0, c0, s1, c1, s2, c2, data);
     }
@@ -278,7 +278,7 @@ namespace pinocchio
       SINCOS(data.joint_q(2), &s2, &c2);
 
       computeSpatialTransform(c0, s0, c1, s1, c2, s2, data);
-      
+
       Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
       dndotx_dqdot1 = c1;
       dndoty_dqdot0 = -c0 * c1;
@@ -392,15 +392,15 @@ namespace pinocchio
       S_32 = dndotx_dqdot1 * radius_a * s1 - dndoty_dqdot1 * radius_b * c1 * s0
              + dndotz_dqdot1 * radius_c * c0 * c1;
 
-      data.S.matrix() << S_11   , S_12  , Scalar(0), 
-                         S_21   , S_22  , Scalar(0), 
+      data.S.matrix() << S_11   , S_12  , Scalar(0),
+                         S_21   , S_22  , Scalar(0),
                          S_31   , S_32  , Scalar(0),
-                         c1 * c2, s2    , Scalar(0), 
-                        -c1 * s2, c2    , Scalar(0), 
+                         c1 * c2, s2    , Scalar(0),
+                        -c1 * s2, c2    , Scalar(0),
                          s1     , Scalar(0), Scalar(1);
       // clang-format on
     }
-    
+
     /// @brief Computes the bias acceleration c(q, v) = Sdot(q)·v.
     template<typename ConfigVector, typename TangentVector>
     void computeBiais(
@@ -447,7 +447,7 @@ namespace pinocchio
       qdot1 = data.joint_v(1);
       qdot2 = data.joint_v(2);
 
-      // last columns and last element of the second column are zero, 
+      // last columns and last element of the second column are zero,
       // so we do not compute them
       Scalar Sdot_11, Sdot_21, Sdot_31, Sdot_41, Sdot_51, Sdot_61;
       Scalar Sdot_12, Sdot_22, Sdot_32, Sdot_42, Sdot_52;
@@ -496,7 +496,6 @@ namespace pinocchio
           * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
         + qdot1 * (dndotx_dqdot1 * radius_a * s1 * s2 - dndoty_dqdot1 * radius_b * c1 * s0 * s2 + dndotz_dqdot1 * radius_c * c0 * c1 * s2 - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1) - qdot2 * (dndotx_dqdot1 * radius_a * c1 * c2 + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
 
-
       // Row 3, Column 1
       Sdot_31 =
         -qdot0 * c1
@@ -518,13 +517,10 @@ namespace pinocchio
 
       Sdot_42 = qdot2 * c2;
       Sdot_52 = -qdot2 * s2;
-      
-      data.c.toVector() << Sdot_11 * qdot0 + Sdot_12 * qdot1,
-                          Sdot_21 * qdot0 + Sdot_22 * qdot1,
-                          Sdot_31 * qdot0 + Sdot_32 * qdot1,
-                          Sdot_41 * qdot0 + Sdot_42 * qdot1,
-                          Sdot_51 * qdot0 + Sdot_52 * qdot1,
-                          Sdot_61 * qdot0;
+
+      data.c.toVector() << Sdot_11 * qdot0 + Sdot_12 * qdot1, Sdot_21 * qdot0 + Sdot_22 * qdot1,
+        Sdot_31 * qdot0 + Sdot_32 * qdot1, Sdot_41 * qdot0 + Sdot_42 * qdot1,
+        Sdot_51 * qdot0 + Sdot_52 * qdot1, Sdot_61 * qdot0;
     }
   }; // struct JointModelEllipsoidTpl
 
