@@ -35,6 +35,156 @@ void addJointAndBody(
   model.appendBodyToJoint(idx, Y);
 }
 
+/// \brief Compute motion subspace derivative Sdot analytically for JointModelEllipsoid
+Eigen::Matrix<double, 6, 3> computeMotionSubspaceDerivative(
+  const JointModelEllipsoid & jmodel,
+  const Eigen::VectorXd & qs,
+  const Eigen::VectorXd & vs)
+{
+  double c0, s0;
+  SINCOS(qs(0), &s0, &c0);
+  double c1, s1;
+  SINCOS(qs(1), &s1, &c1);
+  double c2, s2;
+  SINCOS(qs(2), &s2, &c2);
+
+  // Extract velocities
+  double qdot0 = vs(0);
+  double qdot1 = vs(1);
+  double qdot2 = vs(2);
+
+  // Get radii
+  const double radius_a = jmodel.radius_a;
+  const double radius_b = jmodel.radius_b;
+  const double radius_c = jmodel.radius_c;
+
+  // Derivatives of normal vector components w.r.t. velocities
+  double dndotx_dqdot1 = c1;
+  double dndoty_dqdot0 = -c0 * c1;
+  double dndoty_dqdot1 = s0 * s1;
+  double dndotz_dqdot0 = -c1 * s0;
+  double dndotz_dqdot1 = -c0 * s1;
+
+  // Second derivatives (derivatives of dndot w.r.t. configuration)
+  double d_dndotx_dqdot1_dq1 = -s1;
+  double d_dndoty_dqdot0_dq0 = s0 * c1;
+  double d_dndoty_dqdot0_dq1 = c0 * s1;
+  double d_dndoty_dqdot1_dq1 = s0 * c1;
+  double d_dndotz_dqdot0_dq0 = -c1 * c0;
+  double d_dndotz_dqdot0_dq1 = s0 * s1;
+  double d_dndotz_dqdot1_dq1 = -c0 * c1;
+
+  // Translational part (rows 1-3)
+  double Sdot_11 =
+    qdot0
+      * (-dndoty_dqdot0 * radius_b * (-c0 * c2 * s1 + s0 * s2) 
+         + dndotz_dqdot0 * radius_c * (c0 * s2 + c2 * s0 * s1) 
+         + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq0 
+         + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq0)
+    + qdot1
+        * (dndoty_dqdot0 * radius_b * c1 * c2 * s0 
+           - dndotz_dqdot0 * radius_c * c0 * c1 * c2 
+           + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 
+           + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
+    - qdot2
+        * (dndoty_dqdot0 * radius_b * (-c0 * c2 + s0 * s1 * s2) 
+           - dndotz_dqdot0 * radius_c * (c0 * s1 * s2 + c2 * s0));
+
+  double Sdot_12 =
+    qdot0
+      * (-dndoty_dqdot1 * radius_b * (-c0 * c2 * s1 + s0 * s2) 
+         + dndotz_dqdot1 * radius_c * (c0 * s2 + c2 * s0 * s1) 
+         + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 
+         + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
+    + qdot1 
+        * (-dndotx_dqdot1 * radius_a * c2 * s1 
+           + dndoty_dqdot1 * radius_b * c1 * c2 * s0 
+           - dndotz_dqdot1 * radius_c * c0 * c1 * c2 
+           + radius_a * c1 * c2 * d_dndotx_dqdot1_dq1 
+           + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot1_dq1 
+           + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot1_dq1) 
+    - qdot2 
+        * (dndotx_dqdot1 * radius_a * c1 * s2 
+           + dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2) 
+           - dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0));
+
+  double Sdot_21 =
+    -qdot0
+      * (dndoty_dqdot0 * radius_b * (c0 * s1 * s2 + c2 * s0) 
+         + dndotz_dqdot0 * radius_c * (-c0 * c2 + s0 * s1 * s2) 
+         + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq0 
+         - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq0)
+    - qdot1
+        * (dndoty_dqdot0 * radius_b * c1 * s0 * s2 
+           - dndotz_dqdot0 * radius_c * c0 * c1 * s2 
+           + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 
+           - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
+    - qdot2
+        * (dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1) 
+           + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2));
+
+  double Sdot_22 =
+    -qdot0
+      * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) 
+         + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) 
+         + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 
+         - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
+    + qdot1 
+        * (dndotx_dqdot1 * radius_a * s1 * s2 
+           - dndoty_dqdot1 * radius_b * c1 * s0 * s2 
+           + dndotz_dqdot1 * radius_c * c0 * c1 * s2 
+           - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 
+           - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 
+           + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1) 
+    - qdot2 
+        * (dndotx_dqdot1 * radius_a * c1 * c2 
+           + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) 
+           + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
+
+  double Sdot_31 =
+    -qdot0 * c1
+      * (dndoty_dqdot0 * radius_b * c0 
+         + dndotz_dqdot0 * radius_c * s0 
+         + radius_b * s0 * d_dndoty_dqdot0_dq0 
+         - radius_c * c0 * d_dndotz_dqdot0_dq0)
+    + qdot1
+        * (-c1 * (radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1) 
+           + s1 * (dndoty_dqdot0 * radius_b * s0 - dndotz_dqdot0 * radius_c * c0));
+
+  double Sdot_32 =
+    -qdot0 * c1
+      * (dndoty_dqdot1 * radius_b * c0 
+         + dndotz_dqdot1 * radius_c * s0 
+         + radius_b * s0 * d_dndoty_dqdot0_dq1 
+         - radius_c * c0 * d_dndotz_dqdot0_dq1)
+    + qdot1
+        * (dndotx_dqdot1 * radius_a * c1 
+           + dndoty_dqdot1 * radius_b * s0 * s1 
+           - dndotz_dqdot1 * radius_c * c0 * s1 
+           + radius_a * s1 * d_dndotx_dqdot1_dq1 
+           - radius_b * c1 * s0 * d_dndoty_dqdot1_dq1 
+           + radius_c * c0 * c1 * d_dndotz_dqdot1_dq1);
+
+  // Angular part (rows 4-6)
+  double Sdot_41 = -(qdot1 * c2 * s1 + qdot2 * c1 * s2);
+  double Sdot_51 = qdot1 * s1 * s2 - qdot2 * c1 * c2;
+  double Sdot_61 = qdot1 * c1;
+
+  double Sdot_42 = qdot2 * c2;
+  double Sdot_52 = -qdot2 * s2;
+
+  // Build and return 6x3 matrix
+  Eigen::Matrix<double, 6, 3> Sdot;
+  Sdot << Sdot_11, Sdot_12, 0.0,
+          Sdot_21, Sdot_22, 0.0,
+          Sdot_31, Sdot_32, 0.0,
+          Sdot_41, Sdot_42, 0.0,
+          Sdot_51, Sdot_52, 0.0,
+          Sdot_61, 0.0,     0.0;
+
+  return Sdot;
+}
+
 /// \brief Compute Sdot (motion subspace derivative) via finite differences
 template<typename JointModel>
 Eigen::Matrix<double, 6, JointModel::NV> finiteDiffSdot(
@@ -145,6 +295,7 @@ SE3:: Vector3 computeTranslationAccelerations(
 
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
 
+/// @brief Test the rotationnal equivalence between JointModelEllipsoid and JointModelSphericalZYX
 BOOST_AUTO_TEST_CASE(vsSphericalZYX)
 {
   using namespace pinocchio;
@@ -232,31 +383,31 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataSphericalZYX.v[1].toVector()));
   BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataSphericalZYX.oMi[1]));
 
-  Matrix3 Sdot_e = jDataEllipsoidFK.Sdot.matrix().bottomRows<3>(); // Angular part
+  // Matrix3 Sdot_e = jDataEllipsoidFK.Sdot.matrix().bottomRows<3>(); // Angular part
+  Eigen::Vector3d c_e = jDataEllipsoidFK.c.angular(); // Sdot * qd_e
 
   // The acceleration conversion formula: wdot_s = wdot_e
   // S_s * qdotdot_s + c_s.angular() = Sdot_e * qd_e + S_e * qdotdot_e
   // Solving for qdotdot_e:
   // S_e * qdotdot_e =  c_s.angular()+ S_s * qdotdot_s - Sdot_e * qd_e
   Eigen::Vector3d qdotdot_e =
-    S_e.inverse() * (S_s * qdotdot_s + jDataSphereFK.c.angular() - Sdot_e * qd_e);
+    S_e.inverse() * (S_s * qdotdot_s + jDataSphereFK.c.angular() - c_e);
 
   // Verify angular accelerations match
   Eigen::Vector3d wdot_s = jDataSphereFK.c.angular() + S_s * qdotdot_s;
-  Eigen::Vector3d wdot_e = Sdot_e * qd_e + S_e * qdotdot_e;
+  Eigen::Vector3d wdot_e = c_e + S_e * qdotdot_e;
   BOOST_CHECK(wdot_s.isApprox(wdot_e));
 
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_e, qd_e, qdotdot_e);
   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataSphericalZYX.a[1].toVector()));
-
   // Test RNEA (Recursive Newton-Euler Algorithm) - spatial forces should match
   rnea(modelEllipsoid, dataEllipsoid, q_e, qd_e, qdotdot_e);
   rnea(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataSphericalZYX.f[1]));
-
+  
   // Test ABA (Articulated-Body Algorithm)
   Eigen::VectorXd tau = Eigen::VectorXd::Ones(modelEllipsoid.nv);
   Eigen::VectorXd aAbaEllipsoid =
@@ -334,12 +485,21 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   forwardKinematics(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
 
+  std::cout << "Ellipsoid acceleration: " << dataEllipsoid.a[1].toVector().transpose() << std::endl;
+  std::cout << "Composite acceleration: " << dataComposite.a[1].toVector().transpose() << std::endl;
+
   BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataComposite.a[1].toVector()));
 
   // Test RNEA - spatial forces and torques should match
   rnea(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   rnea(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
+
+  std::cout << "Ellipsoid force: " << dataEllipsoid.f[1].toVector().transpose() << std::endl;
+  std::cout << "Composite force: " << dataComposite.f[1].toVector().transpose() << std::endl;
+
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataComposite.f[1]));
+
+
 
   // Need joint data to get both motion subspaces S_comp and S_ell
   JointDataComposite jdata_c = jComposite.createData();
@@ -398,8 +558,9 @@ BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
 
   // Compute analytical Sdot
   const double eps = 1e-8;
-  jmodel.calc(jdata, q, v);
-  const Eigen::Matrix<double, 6, 3> Sdot_ref = jdata.Sdot.matrix();
+
+  // Reference Sdot with analytical formula
+  const Eigen::Matrix<double, 6, 3> Sdot_ref = computeMotionSubspaceDerivative(jmodel, q, v);
 
   // Compute Sdot via finite differences using helper function
   const Eigen::Matrix<double, 6, 3> Sdot_fd = finiteDiffSdot(jmodel, jdata, q, v, eps);
@@ -430,9 +591,10 @@ BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
   jmodel.calc(jdata, q, v);
 
   jmodel.computeBiais(jdata, q, v);
-  jmodel.computeMotionSubspaceDerivative(jdata, q, v); // to be displaced in the core of the test instead of JointModed
 
-  BOOST_CHECK(jdata.c.toVector().isApprox(jdata.Sdot.matrix() * v, 1e-12));
+  const Eigen::Matrix<double, 6, 3> Sdot = computeMotionSubspaceDerivative(jmodel, q, v);
+
+  BOOST_CHECK(jdata.c.toVector().isApprox(Sdot * v, 1e-12));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
