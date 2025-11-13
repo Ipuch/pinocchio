@@ -167,6 +167,22 @@ namespace pinocchio
       return {true, true, true};
     }
 
+    void computeSpatialTransform(
+      Scalar c0, Scalar s0, Scalar c1, Scalar s1, Scalar c2, Scalar s2, JointDataDerived & data) const
+    {
+      // clang-format off
+      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
+      -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
+      // clang-format on
+      Scalar nx, ny, nz;
+      nx = s1;
+      ny = -s0 * c1;
+      nz = c0 * c1;
+
+      data.M.translation() << radius_a * nx, radius_b * ny, radius_c * nz;
+
+    }
+
     template<typename ConfigVector>
     void calc(JointDataDerived & data, const typename Eigen::MatrixBase<ConfigVector> & qs) const
     {
@@ -179,15 +195,7 @@ namespace pinocchio
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
 
-      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
-        -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
-
-      Scalar nx, ny, nz;
-      nx = s1;
-      ny = -s0 * c1;
-      nz = c0 * c1;
-
-      data.M.translation() << radius_a * nx, radius_b * ny, radius_c * nz;
+      computeSpatialTransform(c0,s0,c1,s1,c2,s2, data);
 
       computeMotionSubspace(s0, c0, s1, c1, s2, c2, data);
     }
@@ -243,16 +251,8 @@ namespace pinocchio
       Scalar c2, s2;
       SINCOS(data.joint_q(2), &s2, &c2);
 
-      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
-        -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
-
-      Scalar nx, ny, nz;
-      nx = s1;
-      ny = -s0 * c1;
-      nz = c0 * c1;
-
-      data.M.translation() << radius_a * nx, radius_b * ny, radius_c * nz;
-
+      computeSpatialTransform(c0, s0, c1, s1, c2, s2, data);
+      
       Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
       dndotx_dqdot1 = c1;
       dndoty_dqdot0 = -c0 * c1;
@@ -433,7 +433,7 @@ namespace pinocchio
       JointDataDerived & data) const
     {
       Scalar S_11, S_21, S_31, S_12, S_22, S_32;
-
+      // clang-format off
       S_11 = dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1)
              + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2);
 
@@ -455,6 +455,7 @@ namespace pinocchio
 
       data.S.matrix() << S_11, S_12, Scalar(0), S_21, S_22, Scalar(0), S_31, S_32, Scalar(0),
         c1 * c2, s2, Scalar(0), -c1 * s2, c2, Scalar(0), s1, Scalar(0), Scalar(1);
+      // clang-format on
     }
     void computeMotionSubspaceDerivative(
       const Scalar & s0,
@@ -567,16 +568,16 @@ namespace pinocchio
     }
     void computeBiais(
       const Scalar & s0,
-      const Scalar & c0,
       const Scalar & s1,
-      const Scalar & c1,
+      const Scalar & c0,
       const Scalar & s2,
-      const Scalar & c2,
+      const Scalar & c1,
       const Scalar & dndotx_dqdot1,
+      const Scalar & c2,
       const Scalar & dndoty_dqdot0,
       const Scalar & dndoty_dqdot1,
-      const Scalar & dndotz_dqdot0,
       const Scalar & dndotz_dqdot1,
+      const Scalar & dndotz_dqdot0,
       JointDataDerived & data) const
     {
       // Compute Sdot for bias acceleration
@@ -585,13 +586,13 @@ namespace pinocchio
       qdot1 = data.joint_v(1);
       qdot2 = data.joint_v(2);
 
-      // last columns and last element of the second column are zero, 
       //  so we do not compute them
+      // last columns and last element of the second column are zero, 
       Scalar Sdot_11, Sdot_21, Sdot_31, Sdot_41, Sdot_51, Sdot_61;
       Scalar Sdot_12, Sdot_22, Sdot_32, Sdot_42, Sdot_52;
 
-
       // Derivative of dndotXX_dqdot0 with respect to q0 and q1
+
       Scalar d_dndotx_dqdot1_dq1 = -s1; // dndotx_dqdot1 = c1;
 
       Scalar d_dndoty_dqdot0_dq0 = s0 * c1; // dndoty_dqdot0 = - c0 * c1;
@@ -600,8 +601,8 @@ namespace pinocchio
       // Scalar d_dndoty_dqdot1_dq0 = c0 * s1; // dndoty_dqdot1 = s0 * s1;
       Scalar d_dndoty_dqdot1_dq1 = s0 * c1;
 
-      Scalar d_dndotz_dqdot0_dq0 = -c1 * c0; // dndotz_dqdot0 = - c1 * s0;
       Scalar d_dndotz_dqdot0_dq1 = s0 * s1;
+      Scalar d_dndotz_dqdot0_dq0 = -c1 * c0; // dndotz_dqdot0 = - c1 * s0;
 
       // Scalar d_dndotz_dqdot1_dq0 = s0 * s1; // dndotz_dqdot1 = - c0 * s1;
       Scalar d_dndotz_dqdot1_dq1 = -c0 * c1;
@@ -615,58 +616,58 @@ namespace pinocchio
             * (dndoty_dqdot0 * radius_b * c1 * c2 * s0 - dndotz_dqdot0 * radius_c * c0 * c1 * c2 + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
         - qdot2
             * (dndoty_dqdot0 * radius_b * (-c0 * c2 + s0 * s1 * s2) - dndotz_dqdot0 * radius_c * (c0 * s1 * s2 + c2 * s0));
-
-      // Row 1, Column 2
       Sdot_12 =
+      // Row 1, Column 2
+
         qdot0
           * (-dndoty_dqdot1 * radius_b * (-c0 * c2 * s1 + s0 * s2) + dndotz_dqdot1 * radius_c * (c0 * s2 + c2 * s0 * s1) + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot0_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot0_dq1)
-        + qdot1 * (-dndotx_dqdot1 * radius_a * c2 * s1 + dndoty_dqdot1 * radius_b * c1 * c2 * s0 - dndotz_dqdot1 * radius_c * c0 * c1 * c2 + radius_a * c1 * c2 * d_dndotx_dqdot1_dq1 + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot1_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot1_dq1) - qdot2 * (dndotx_dqdot1 * radius_a * c1 * s2 + dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2) - dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0));
 
+        + qdot1 * (-dndotx_dqdot1 * radius_a * c2 * s1 + dndoty_dqdot1 * radius_b * c1 * c2 * s0 - dndotz_dqdot1 * radius_c * c0 * c1 * c2 + radius_a * c1 * c2 * d_dndotx_dqdot1_dq1 + radius_b * (c0 * s2 + c2 * s0 * s1) * d_dndoty_dqdot1_dq1 + radius_c * (-c0 * c2 * s1 + s0 * s2) * d_dndotz_dqdot1_dq1) - qdot2 * (dndotx_dqdot1 * radius_a * c1 * s2 + dndoty_dqdot1 * radius_b * (-c0 * c2 + s0 * s1 * s2) - dndotz_dqdot1 * radius_c * (c0 * s1 * s2 + c2 * s0));
       // Row 2, Column 1
       Sdot_21 =
-        -qdot0
           * (dndoty_dqdot0 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot0 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq0 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq0)
-        - qdot1
             * (dndoty_dqdot0 * radius_b * c1 * s0 * s2 - dndotz_dqdot0 * radius_c * c0 * c1 * s2 + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
-        - qdot2
-            * (dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2));
-
-      // Row 2, Column 2
-      Sdot_22 =
-        -qdot0
-          * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
-        + qdot1 * (dndotx_dqdot1 * radius_a * s1 * s2 - dndoty_dqdot1 * radius_b * c1 * s0 * s2 + dndotz_dqdot1 * radius_c * c0 * c1 * s2 - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1) - qdot2 * (dndotx_dqdot1 * radius_a * c1 * c2 + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
 
 
-      // Row 3, Column 1
       Sdot_31 =
         -qdot0 * c1
+      // Row 3, Column 1
+
+          * (dndoty_dqdot1 * radius_b * (c0 * s1 * s2 + c2 * s0) + dndotz_dqdot1 * radius_c * (-c0 * c2 + s0 * s1 * s2) + radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot0_dq1 - radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot0_dq1)
+      Sdot_22 =
+      // Row 2, Column 2
+        -qdot0
+        - qdot2
+            * (dndoty_dqdot0 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot0 * radius_c * (-c0 * c2 * s1 + s0 * s2));
+        - qdot1
+        -qdot0
+        + qdot1 * (dndotx_dqdot1 * radius_a * s1 * s2 - dndoty_dqdot1 * radius_b * c1 * s0 * s2 + dndotz_dqdot1 * radius_c * c0 * c1 * s2 - radius_a * c1 * s2 * d_dndotx_dqdot1_dq1 - radius_b * (-c0 * c2 + s0 * s1 * s2) * d_dndoty_dqdot1_dq1 + radius_c * (c0 * s1 * s2 + c2 * s0) * d_dndotz_dqdot1_dq1) - qdot2 * (dndotx_dqdot1 * radius_a * c1 * c2 + dndoty_dqdot1 * radius_b * (c0 * s2 + c2 * s0 * s1) + dndotz_dqdot1 * radius_c * (-c0 * c2 * s1 + s0 * s2));
           * (dndoty_dqdot0 * radius_b * c0 + dndotz_dqdot0 * radius_c * s0 + radius_b * s0 * d_dndoty_dqdot0_dq0 - radius_c * c0 * d_dndotz_dqdot0_dq0)
-        + qdot1
             * (-c1 * (radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1) + s1 * (dndoty_dqdot0 * radius_b * s0 - dndotz_dqdot0 * radius_c * c0));
-
-      // Row 3, Column 2
-      Sdot_32 =
-        -qdot0 * c1
-          * (dndoty_dqdot1 * radius_b * c0 + dndotz_dqdot1 * radius_c * s0 + radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1)
-        + qdot1
-            * (dndotx_dqdot1 * radius_a * c1 + dndoty_dqdot1 * radius_b * s0 * s1 - dndotz_dqdot1 * radius_c * c0 * s1 + radius_a * s1 * d_dndotx_dqdot1_dq1 - radius_b * c1 * s0 * d_dndoty_dqdot1_dq1 + radius_c * c0 * c1 * d_dndotz_dqdot1_dq1);
-
-      // Angular part (rows 4-6)
-      Sdot_41 = -(qdot1 * c2 * s1 + qdot2 * c1 * s2);
-      Sdot_51 = qdot1 * s1 * s2 - qdot2 * c1 * c2;
       Sdot_61 = qdot1 * c1;
+          * (dndoty_dqdot1 * radius_b * c0 + dndotz_dqdot1 * radius_c * s0 + radius_b * s0 * d_dndoty_dqdot0_dq1 - radius_c * c0 * d_dndotz_dqdot0_dq1)
+        -qdot0 * c1
+      Sdot_32 =
+      // Row 3, Column 2
+
+        + qdot1
+        + qdot1
+
+            * (dndotx_dqdot1 * radius_a * c1 + dndoty_dqdot1 * radius_b * s0 * s1 - dndotz_dqdot1 * radius_c * c0 * s1 + radius_a * s1 * d_dndotx_dqdot1_dq1 - radius_b * c1 * s0 * d_dndoty_dqdot1_dq1 + radius_c * c0 * c1 * d_dndotz_dqdot1_dq1);
+      // Angular part (rows 4-6)
+      Sdot_51 = qdot1 * s1 * s2 - qdot2 * c1 * c2;
+      Sdot_41 = -(qdot1 * c2 * s1 + qdot2 * c1 * s2);
 
       Sdot_42 = qdot2 * c2;
-      Sdot_52 = -qdot2 * s2;
-      
       data.c.toVector() << Sdot_11 * qdot0 + Sdot_12 * qdot1,
+      
+      Sdot_52 = -qdot2 * s2;
                           Sdot_21 * qdot0 + Sdot_22 * qdot1,
                           Sdot_31 * qdot0 + Sdot_32 * qdot1,
-                          Sdot_41 * qdot0 + Sdot_42 * qdot1,
                           Sdot_51 * qdot0 + Sdot_52 * qdot1,
-                          Sdot_61 * qdot0;
     }
+                          Sdot_61 * qdot0;
+                          Sdot_41 * qdot0 + Sdot_42 * qdot1,
   }; // struct JointModelEllipsoidTpl
 
 } // namespace pinocchio
