@@ -119,7 +119,28 @@ SE3::Vector3 computeTranslationVelocities(
   v(1) = jmodel.radius_b * (-c0 * c1 * vs(0) + s0 * s1 * vs(1));
   v(2) = jmodel.radius_c * (-s0 * c1 * vs(0) - c0 * s1 * vs(1));
   return v;
-  }
+}
+
+SE3:: Vector3 computeTranslationAccelerations(
+  const JointModelEllipsoid & jmodel,
+  const Eigen::VectorXd & qs,
+  const Eigen::VectorXd & vs,
+  const Eigen::VectorXd & as) 
+{
+  double c0, s0;
+  SINCOS(qs(0), &s0, &c0);
+  double c1, s1;
+  SINCOS(qs(1), &s1, &c1);
+  SE3:: Vector3 a;
+  a(0) = jmodel.radius_a * (-s1 * vs(1) * vs(1) + c1 * as(1));
+  a(1) =
+    jmodel.radius_b
+    * (s0 * c1 * vs(0) * vs(0) + c0 * s1 * vs(0) * vs(1) - c0 * c1 * as(0) + c0 * s1 * vs(1) * vs(0) + s0 * c1 * vs(1) * vs(1) + s0 * s1 * as(1));
+  a(2) =
+    jmodel.radius_c
+    * (-c0 * c1 * vs(0) * vs(0) + s0 * s1 * vs(0) * vs(1) - s0 * c1 * as(0) + s0 * s1 * vs(1) * vs(0) - c0 * c1 * vs(1) * vs(1) - c0 * s1 * as(1));
+  return a;
+}
 
 
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
@@ -305,7 +326,7 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   // Acceleration test
   Eigen::VectorXd qddot_ellipsoid(3);
   qddot_ellipsoid << 0.01, 0.02, 0.03;
-  Eigen::Vector3d a_linear = jointModelEllipsoid.computeTranslationAccelerations(
+  Eigen::Vector3d a_linear = computeTranslationAccelerations(jointModelEllipsoid,
     q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   Eigen::VectorXd qddot_composite(6);
   qddot_composite << a_linear, qddot_ellipsoid;
