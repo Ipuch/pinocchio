@@ -407,15 +407,9 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   rnea(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataSphericalZYX.f[1]));
-  
-  // Test ABA (Articulated-Body Algorithm)
-  Eigen::VectorXd tau = Eigen::VectorXd::Ones(modelEllipsoid.nv);
-  Eigen::VectorXd aAbaEllipsoid =
-    aba(modelEllipsoid, dataEllipsoid, q_e, qd_e, dataEllipsoid.tau, Convention::WORLD);
-
-  BOOST_CHECK(dataEllipsoid.ddq.isApprox(qdotdot_e));
 }
 
+/// @brief Test the equivalence between JointModelEllipsoid and a Composite joint (Tx, Ty, Tz, Rx, Ry, Rz)
 BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
 {
   using namespace pinocchio;
@@ -485,21 +479,13 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   forwardKinematics(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   forwardKinematics(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
 
-  std::cout << "Ellipsoid acceleration: " << dataEllipsoid.a[1].toVector().transpose() << std::endl;
-  std::cout << "Composite acceleration: " << dataComposite.a[1].toVector().transpose() << std::endl;
-
   BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataComposite.a[1].toVector()));
 
   // Test RNEA - spatial forces and torques should match
   rnea(modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, qddot_ellipsoid);
   rnea(modelComposite, dataComposite, q_composite, qdot_composite, qddot_composite);
 
-  std::cout << "Ellipsoid force: " << dataEllipsoid.f[1].toVector().transpose() << std::endl;
-  std::cout << "Composite force: " << dataComposite.f[1].toVector().transpose() << std::endl;
-
   BOOST_CHECK(dataEllipsoid.f[1].isApprox(dataComposite.f[1]));
-
-
 
   // Need joint data to get both motion subspaces S_comp and S_ell
   JointDataComposite jdata_c = jComposite.createData();
@@ -526,14 +512,53 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
     dataEllipsoid.tau.isApprox(tau_proj, 1e-6),
     "Projected composite torques do not match ellipsoid torques.\n"
       << "Expected: " << dataEllipsoid.tau.transpose() << "\nGot: " << tau_proj.transpose());
-
-  // Test ABA (Articulated-Body Algorithm)
-  Eigen::VectorXd aAbaEllipsoid = aba(
-    modelEllipsoid, dataEllipsoid, q_ellipsoid, qdot_ellipsoid, dataEllipsoid.tau,
-    Convention::WORLD);
-  BOOST_CHECK(aAbaEllipsoid.isApprox(qddot_ellipsoid));
 }
 
+/// @brief Test RNEA vs ABA with multiple random configurations
+BOOST_AUTO_TEST_CASE(RNEAvsABA)
+{
+  using namespace pinocchio;
+  typedef SE3::Vector3 Vector3;
+  typedef SE3::Matrix3 Matrix3;
+
+  double radius_a = 2.5;
+  double radius_b = 1.8;
+  double radius_c = 1.2;
+
+  Inertia inertia(1.0, Vector3::Zero(), Matrix3::Identity());
+  SE3 pos = SE3::Identity();
+
+  Model model;
+  JointModelEllipsoid jointModel(radius_a, radius_b, radius_c);
+  addJointAndBody(model, jointModel, 0, pos, "ellipsoid", inertia);
+
+  Data data(model);
+  Data data_aba(model);
+
+  // Test with multiple random configurations
+  for (int trial = 0; trial < 10; ++trial)
+  {
+    Eigen::VectorXd q = Eigen::VectorXd::Random(model.nq);
+    Eigen::VectorXd v = Eigen::VectorXd::Random(model.nv);
+    Eigen::VectorXd a = Eigen::VectorXd::Random(model.nv);
+
+    // RNEA
+    rnea(model, data, q, v, a);
+    Eigen::VectorXd tau_rnea = data.tau;
+
+    // ABA
+    aba(model, data_aba, q, v, tau_rnea, Convention::WORLD);
+
+    BOOST_CHECK_MESSAGE(
+      a.isApprox(data_aba.ddq, 1e-9),
+      "RNEA and ABA inconsistent at trial " << trial << "\n"
+        << "Configuration: " << q.transpose() << "\n"
+        << "Expected: " << a.transpose() << "\n"
+        << "Got: " << data_aba.ddq.transpose());
+  }
+}
+
+/// @brief Test Sdot via finite differences
 BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
 {
   using namespace pinocchio;
@@ -567,6 +592,8 @@ BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
 
   BOOST_CHECK(Sdot_ref.isApprox(Sdot_fd, sqrt(eps)));
 }
+
+/// @brief Test that biais term equals Sdot * v
 BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
 {
   using namespace pinocchio;
