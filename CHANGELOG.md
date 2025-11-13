@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ROS: added jrl_cmakemodules dependency ([#2789](https://github.com/stack-of-tasks/pinocchio/pull/2789))
 - Add docker images ([#2776](https://github.com/stack-of-tasks/pinocchio/pull/2776))
 - Add names to joints that are inside a composite joint ([#2786](https://github.com/stack-of-tasks/pinocchio/pull/2786))
+- Add Ellipsoid Joint (3-DOF surface constraint), get ready for biomechanics ([#2797](https://github.com/stack-of-tasks/pinocchio/pull/2797))
 
 ### Changed
 - Python version update ([#2802](https://github.com/stack-of-tasks/pinocchio/pull/2802)):
@@ -29,10 +30,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 - Remove CMake < 3.22 details ([#2790](https://github.com/stack-of-tasks/pinocchio/pull/2790))
-
-
-### Added
-- Add Ellipsoid Joint to the joint collection, get ready for biomechanics. ([#....])(todo)
 
 ## [3.8.0] - 2025-09-17
 
