@@ -353,4 +353,33 @@ BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
 
   BOOST_CHECK(Sdot_ref.isApprox(Sdot_fd, sqrt(eps)));
 }
+BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
+{
+  using namespace pinocchio;
+
+  // Ellipsoid parameters
+  double radius_a = 2.0;
+  double radius_b = 1.5;
+  double radius_c = 1.0;
+
+  JointModelEllipsoid jmodel(radius_a, radius_b, radius_c);
+  jmodel.setIndexes(0, 0, 0);
+
+  JointDataEllipsoid jdata = jmodel.createData();
+
+  // Test configuration and velocity
+  typedef JointModelEllipsoid::ConfigVector_t ConfigVector_t;
+  typedef JointModelEllipsoid::TangentVector_t TangentVector_t;
+  typedef LieGroup<JointModelEllipsoid>::type LieGroupType;
+
+  ConfigVector_t q = LieGroupType().random();
+  TangentVector_t v = TangentVector_t::Random();
+  jmodel.calc(jdata, q, v);
+
+  jmodel.computeBiais(jdata, q, v);
+  jmodel.computeMotionSubspaceDerivative(jdata, q, v); // to be displaced in the core of the test instead of JointModed
+
+  BOOST_CHECK(jdata.c.toVector().isApprox(jdata.Sdot.matrix() * v, 1e-12));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

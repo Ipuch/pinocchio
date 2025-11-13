@@ -233,7 +233,10 @@ namespace pinocchio
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
 
-      data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
+      // data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
+      computeBiais(
+        s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
+        dndotz_dqdot1, data);
     }
 
     template<typename ConfigVector, typename TangentVector>
@@ -272,7 +275,10 @@ namespace pinocchio
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
 
-      data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
+      // data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
+      computeBiais(
+        s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
+        dndotz_dqdot1, data);
     }
 
     template<typename VectorLike, typename Matrix6Like>
@@ -457,6 +463,32 @@ namespace pinocchio
         c1 * c2, s2, Scalar(0), -c1 * s2, c2, Scalar(0), s1, Scalar(0), Scalar(1);
       // clang-format on
     }
+
+    template<typename ConfigVector, typename TangentVector>
+    void computeMotionSubspaceDerivative(
+      JointDataDerived & data,
+      const Eigen::MatrixBase<ConfigVector> & qs,
+      const Eigen::MatrixBase<TangentVector> & vs) const
+    {
+      Scalar c0, s0;
+      SINCOS(qs(0), &s0, &c0);
+      Scalar c1, s1;
+      SINCOS(qs(1), &s1, &c1);
+      Scalar c2, s2;
+      SINCOS(qs(2), &s2, &c2);
+
+      Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
+      dndotx_dqdot1 = c1;
+      dndoty_dqdot0 = -c0 * c1;
+      dndoty_dqdot1 = s0 * s1;
+      dndotz_dqdot0 = -c1 * s0;
+      dndotz_dqdot1 = -c0 * s1;
+
+      computeMotionSubspaceDerivative(
+        s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
+        dndotz_dqdot1, data);
+    }
+
     void computeMotionSubspaceDerivative(
       const Scalar & s0,
       const Scalar & c0,
@@ -566,8 +598,33 @@ namespace pinocchio
       data.Sdot.matrix() << Sdot_11, Sdot_12, Sdot_13, Sdot_21, Sdot_22, Sdot_23, Sdot_31, Sdot_32,
         Sdot_33, Sdot_41, Sdot_42, Sdot_43, Sdot_51, Sdot_52, Sdot_53, Sdot_61, Sdot_62, Sdot_63;
     }
+    
+    template<typename ConfigVector, typename TangentVector>
     void computeBiais(
-       void computeBiais(
+      JointDataDerived & data,
+      const Eigen::MatrixBase<ConfigVector> & qs,
+      const Eigen::MatrixBase<TangentVector> & vs) const
+    {
+      Scalar c0, s0;
+      SINCOS(qs(0), &s0, &c0);
+      Scalar c1, s1;
+      SINCOS(qs(1), &s1, &c1);
+      Scalar c2, s2;
+      SINCOS(qs(2), &s2, &c2);
+
+      Scalar dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0, dndotz_dqdot1;
+      dndotx_dqdot1 = c1;
+      dndoty_dqdot0 = -c0 * c1;
+      dndoty_dqdot1 = s0 * s1;
+      dndotz_dqdot0 = -c1 * s0;
+      dndotz_dqdot1 = -c0 * s1;
+
+      computeBiais(
+        s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
+        dndotz_dqdot1, data);
+    }
+
+    void computeBiais(
       const Scalar & s0,
       const Scalar & c0,
       const Scalar & s1,
