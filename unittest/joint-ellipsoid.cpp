@@ -383,7 +383,6 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   BOOST_CHECK(dataEllipsoid.v[1].toVector().isApprox(dataSphericalZYX.v[1].toVector()));
   BOOST_CHECK(dataEllipsoid.oMi[1].isApprox(dataSphericalZYX.oMi[1]));
 
-  // Matrix3 Sdot_e = jDataEllipsoidFK.Sdot.matrix().bottomRows<3>(); // Angular part
   Eigen::Vector3d c_e = jDataEllipsoidFK.c.angular(); // Sdot * qd_e
 
   // The acceleration conversion formula: wdot_s = wdot_e
@@ -402,7 +401,8 @@ BOOST_AUTO_TEST_CASE(vsSphericalZYX)
   forwardKinematics(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 
   BOOST_CHECK(dataEllipsoid.a[1].toVector().isApprox(dataSphericalZYX.a[1].toVector()));
-  // Test RNEA (Recursive Newton-Euler Algorithm) - spatial forces should match
+
+  // Test RNEA (Recursive Newton-Euler Algorithm) - spatial forces should match with both joints
   rnea(modelEllipsoid, dataEllipsoid, q_e, qd_e, qdotdot_e);
   rnea(modelSphericalZYX, dataSphericalZYX, q_s, qd_s, qdotdot_s);
 

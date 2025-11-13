@@ -80,7 +80,6 @@ namespace pinocchio
     TangentVector_t joint_v;
 
     Constraint_t S;
-    Constraint_t Sdot;
     Transformation_t M;
     Motion_t v;
     Bias_t c;
@@ -95,7 +94,6 @@ namespace pinocchio
     : joint_q(ConfigVector_t::Zero())
     , joint_v(TangentVector_t::Zero())
     , S()
-    , Sdot()
     , M(Transformation_t::Identity())
     , v(Motion_t::Zero())
     , c(Bias_t::Zero())
@@ -171,8 +169,9 @@ namespace pinocchio
       Scalar c0, Scalar s0, Scalar c1, Scalar s1, Scalar c2, Scalar s2, JointDataDerived & data) const
     {
       // clang-format off
-      data.M.rotation() << c1 * c2, -c1 * s2, s1, c0 * s2 + c2 * s0 * s1, c0 * c2 - s0 * s1 * s2,
-      -c1 * s0, -c0 * c2 * s1 + s0 * s2, c0 * s1 * s2 + c2 * s0, c0 * c1;
+      data.M.rotation() << c1 * c2                , -c1 * s2                , s1      ,
+                           c0 * s2 + c2 * s0 * s1 , c0 * c2 - s0 * s1 * s2  ,-c1 * s0 , 
+                          -c0 * c2 * s1 + s0 * s2 , c0 * s1 * s2 + c2 * s0  , c0 * c1;
       // clang-format on
       Scalar nx, ny, nz;
       nx = s1;
@@ -229,7 +228,6 @@ namespace pinocchio
       // Velocity part
       data.v.toVector().noalias() = data.S.matrix() * data.joint_v;
 
-      // data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
       computeBiais(
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
@@ -267,7 +265,6 @@ namespace pinocchio
       data.joint_v = vs.template segment<NV>(idx_v());
       data.v.toVector().noalias() = data.S.matrix() * data.joint_v;
 
-      // data.c.toVector().noalias() = data.Sdot.matrix() * data.joint_v;
       computeBiais(
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
@@ -366,8 +363,12 @@ namespace pinocchio
       S_32 = dndotx_dqdot1 * radius_a * s1 - dndoty_dqdot1 * radius_b * c1 * s0
              + dndotz_dqdot1 * radius_c * c0 * c1;
 
-      data.S.matrix() << S_11, S_12, Scalar(0), S_21, S_22, Scalar(0), S_31, S_32, Scalar(0),
-        c1 * c2, s2, Scalar(0), -c1 * s2, c2, Scalar(0), s1, Scalar(0), Scalar(1);
+      data.S.matrix() << S_11   , S_12  , Scalar(0), 
+                         S_21   , S_22  , Scalar(0), 
+                         S_31   , S_32  , Scalar(0),
+                         c1 * c2, s2    , Scalar(0), 
+                        -c1 * s2, c2    , Scalar(0), 
+                         s1     , Scalar(0), Scalar(1);
       // clang-format on
     }
     
@@ -417,24 +418,21 @@ namespace pinocchio
       qdot2 = data.joint_v(2);
 
       // last columns and last element of the second column are zero, 
-      //  so we do not compute them
+      // so we do not compute them
       Scalar Sdot_11, Sdot_21, Sdot_31, Sdot_41, Sdot_51, Sdot_61;
       Scalar Sdot_12, Sdot_22, Sdot_32, Sdot_42, Sdot_52;
 
-
       // Derivative of dndotXX_dqdot0 with respect to q0 and q1
-      Scalar d_dndotx_dqdot1_dq1 = -s1; // dndotx_dqdot1 = c1;
+      Scalar d_dndotx_dqdot1_dq1 = -s1;
 
-      Scalar d_dndoty_dqdot0_dq0 = s0 * c1; // dndoty_dqdot0 = - c0 * c1;
+      Scalar d_dndoty_dqdot0_dq0 = s0 * c1;
       Scalar d_dndoty_dqdot0_dq1 = c0 * s1;
 
-      // Scalar d_dndoty_dqdot1_dq0 = c0 * s1; // dndoty_dqdot1 = s0 * s1;
       Scalar d_dndoty_dqdot1_dq1 = s0 * c1;
 
-      Scalar d_dndotz_dqdot0_dq0 = -c1 * c0; // dndotz_dqdot0 = - c1 * s0;
+      Scalar d_dndotz_dqdot0_dq0 = -c1 * c0;
       Scalar d_dndotz_dqdot0_dq1 = s0 * s1;
 
-      // Scalar d_dndotz_dqdot1_dq0 = s0 * s1; // dndotz_dqdot1 = - c0 * s1;
       Scalar d_dndotz_dqdot1_dq1 = -c0 * c1;
 
       // Upper part (translation)
@@ -531,4 +529,4 @@ namespace boost
   };
 } // namespace boost
 
-#endif // ifndef __pinocchio_multibody_joint_spherical_ZYX_hpp__
+#endif // ifndef __pinocchio_multibody_joint_ellipsoid_hpp__
