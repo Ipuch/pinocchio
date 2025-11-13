@@ -20,7 +20,6 @@
 #include <iostream>
 
 using namespace pinocchio;
-
 template<typename D>
 void addJointAndBody(
   Model & model,
@@ -88,6 +87,40 @@ Eigen::Matrix<double, 6, JointModel::NV> finiteDiffSdot(
 
   return Sdot_fd;
 }
+
+
+SE3::Vector3 computeTranslations(const JointModelEllipsoid & jmodel, const Eigen::VectorXd & qs)
+{
+  double c0, s0;
+  SINCOS(qs(0), &s0, &c0);
+  double c1, s1;
+  SINCOS(qs(1), &s1, &c1);
+
+  double nx, ny, nz;
+  nx = s1;
+  ny = -s0 * c1;
+  nz = c0 * c1;
+
+  return SE3::Vector3(jmodel.radius_a * nx, jmodel.radius_b * ny, jmodel.radius_c * nz);
+}
+
+SE3::Vector3 computeTranslationVelocities(
+  const JointModelEllipsoid & jmodel,
+  const Eigen::VectorXd & qs,
+  const Eigen::VectorXd & vs)
+{
+  double c0, s0;
+  SINCOS(qs(0), &s0, &c0);
+  double c1, s1;
+  SINCOS(qs(1), &s1, &c1);
+
+  SE3::Vector3 v;
+  v(0) = jmodel.radius_a * c1 * vs(1);
+  v(1) = jmodel.radius_b * (-c0 * c1 * vs(0) + s0 * s1 * vs(1));
+  v(2) = jmodel.radius_c * (-s0 * c1 * vs(0) - c0 * s1 * vs(1));
+  return v;
+  }
+
 
 BOOST_AUTO_TEST_SUITE(JointEllipsoid)
 
@@ -247,7 +280,7 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   // Test positions of ellispoid vs composite
   Eigen::VectorXd q_ellipsoid(3);
   q_ellipsoid << 1.0, 2.0, 3.0; // rx, ry, rz
-  Eigen::Vector3d t = jointModelEllipsoid.computeTranslations(q_ellipsoid);
+  Eigen::Vector3d t = computeTranslations(jointModelEllipsoid, q_ellipsoid);
   Eigen::VectorXd q_composite(6);
   q_composite << t, q_ellipsoid;
 
@@ -260,8 +293,7 @@ BOOST_AUTO_TEST_CASE(vsCompositeTxTyTzRxRyRz)
   Eigen::VectorXd qdot_ellipsoid(3);
   qdot_ellipsoid << 0.1, 0.2, 0.3;
 
-  Eigen::Vector3d v_linear =
-    jointModelEllipsoid.computeTranslationVelocities(q_ellipsoid, qdot_ellipsoid);
+  Eigen::Vector3d v_linear =  computeTranslationVelocities(jointModelEllipsoid, q_ellipsoid, qdot_ellipsoid);
   Eigen::VectorXd qdot_composite(6);
   qdot_composite << v_linear, qdot_ellipsoid;
 
