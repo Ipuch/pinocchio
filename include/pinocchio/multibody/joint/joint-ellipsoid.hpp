@@ -10,9 +10,6 @@
 #include "pinocchio/multibody/joint-motion-subspace.hpp"
 #include "pinocchio/math/sincos.hpp"
 #include "pinocchio/math/matrix.hpp"
-#include "pinocchio/spatial/inertia.hpp"
-#include "pinocchio/spatial/skew.hpp"
-#include "pinocchio/multibody/joint-motion-subspace.hpp"
 
 namespace pinocchio
 {
