@@ -113,6 +113,23 @@ struct initConstraint<pinocchio::JointFrictionConstraintModel, void>
 };
 
 template<>
+struct initConstraint<pinocchio::CoordinateCoupletConstraintModel, void>
+{
+  typedef pinocchio::Model Model;
+  typedef pinocchio::CoordinateCoupletConstraintModel ConstraintModel;
+
+  static ConstraintModel run(const Model & model)
+  {
+    ConstraintModel cmodel(model, 0, 1);
+    cmodel.name = cmodel.classname();
+    cmodel.setCompliance(Eigen::VectorXd::Random(cmodel.residualSize()));
+    cmodel.baumgarte_corrector_parameters().Kd = 1.0;
+    cmodel.baumgarte_corrector_parameters().Kp = 3.14;
+    return cmodel;
+  }
+};
+
+template<>
 struct initConstraint<pinocchio::PointAnchorConstraintModel, void>
 {
   typedef pinocchio::Model Model;

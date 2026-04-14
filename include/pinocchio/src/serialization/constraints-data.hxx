@@ -48,6 +48,21 @@ namespace boost
     template<typename Archive, typename Scalar, int Options>
     void serialize(
       Archive & ar,
+      ::pinocchio::CoordinateCoupletConstraintDataTpl<Scalar, Options> & cdata,
+      const unsigned int /*version*/)
+    {
+      typedef ::pinocchio::CoordinateCoupletConstraintDataTpl<Scalar, Options> Self;
+      typedef typename Self::Base Base;
+      ar & make_nvp("base", boost::serialization::base_object<Base>(cdata));
+      ar & make_nvp("constraint_residual", cdata.constraint_residual);
+      ar & make_nvp("compact_tangent_map", cdata.compact_tangent_map);
+      ar & make_nvp("coordinate1_tangent_map", cdata.coordinate1_tangent_map);
+      ar & make_nvp("coordinate2_tangent_map", cdata.coordinate2_tangent_map);
+    }
+
+    template<typename Archive, typename Scalar, int Options>
+    void serialize(
+      Archive & ar,
       ::pinocchio::JointLimitConstraintDataTpl<Scalar, Options> & cdata,
       const unsigned int /*version*/)
     {

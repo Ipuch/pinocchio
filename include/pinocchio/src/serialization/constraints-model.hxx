@@ -144,6 +144,30 @@ namespace boost
     namespace internal
     {
       template<typename Scalar, int Options>
+      struct CoordinateCoupletConstraintModelAccessor
+      : public ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options>
+      {
+        typedef ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> Base;
+        using Base::m_coordinate1_id;
+        using Base::m_coordinate2_id;
+        using Base::m_joint1_id;
+        using Base::m_joint2_id;
+        using Base::m_joint1_local_coordinate_id;
+        using Base::m_joint2_local_coordinate_id;
+        using Base::m_joint1_idx_v;
+        using Base::m_joint2_idx_v;
+        using Base::m_joint1_nq;
+        using Base::m_joint2_nq;
+        using Base::m_joint1_nv;
+        using Base::m_joint2_nv;
+        using Base::m_unique_joint_ids;
+        using Base::m_coordinate1_row_in_compact_tangent_map;
+        using Base::m_coordinate2_row_in_compact_tangent_map;
+        using Base::m_total_selected_nq;
+        using Base::m_max_selected_nv;
+      };
+
+      template<typename Scalar, int Options>
       struct JointLimitConstraintModelAccessor
       : public ::pinocchio::JointLimitConstraintModelTpl<Scalar, Options>
       {
@@ -168,6 +192,44 @@ namespace boost
         using Base::m_selected_joints;
       };
     } // namespace internal
+
+    template<typename Archive, typename Scalar, int Options>
+    void serialize(
+      Archive & ar,
+      ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> & cmodel,
+      const unsigned int /*version*/)
+    {
+      typedef ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> Self;
+      typedef typename Self::Base Base;
+      ar & make_nvp("base", boost::serialization::base_object<Base>(cmodel));
+      typedef typename Self::BaseCommonParameters BaseCommonParameters;
+      ar & make_nvp(
+        "base_common_parameters", boost::serialization::base_object<BaseCommonParameters>(cmodel));
+
+      typedef internal::CoordinateCoupletConstraintModelAccessor<Scalar, Options> Accessor;
+      auto & cmodel_ = reinterpret_cast<Accessor &>(cmodel);
+      ar & make_nvp("m_coordinate1_id", cmodel_.m_coordinate1_id);
+      ar & make_nvp("m_coordinate2_id", cmodel_.m_coordinate2_id);
+      ar & make_nvp("m_joint1_id", cmodel_.m_joint1_id);
+      ar & make_nvp("m_joint2_id", cmodel_.m_joint2_id);
+      ar & make_nvp("m_joint1_local_coordinate_id", cmodel_.m_joint1_local_coordinate_id);
+      ar & make_nvp("m_joint2_local_coordinate_id", cmodel_.m_joint2_local_coordinate_id);
+      ar & make_nvp("m_joint1_idx_v", cmodel_.m_joint1_idx_v);
+      ar & make_nvp("m_joint2_idx_v", cmodel_.m_joint2_idx_v);
+      ar & make_nvp("m_joint1_nq", cmodel_.m_joint1_nq);
+      ar & make_nvp("m_joint2_nq", cmodel_.m_joint2_nq);
+      ar & make_nvp("m_joint1_nv", cmodel_.m_joint1_nv);
+      ar & make_nvp("m_joint2_nv", cmodel_.m_joint2_nv);
+      ar & make_nvp("m_unique_joint_ids", cmodel_.m_unique_joint_ids);
+      ar & make_nvp(
+        "m_coordinate1_row_in_compact_tangent_map",
+        cmodel_.m_coordinate1_row_in_compact_tangent_map);
+      ar & make_nvp(
+        "m_coordinate2_row_in_compact_tangent_map",
+        cmodel_.m_coordinate2_row_in_compact_tangent_map);
+      ar & make_nvp("m_total_selected_nq", cmodel_.m_total_selected_nq);
+      ar & make_nvp("m_max_selected_nv", cmodel_.m_max_selected_nv);
+    }
 
     template<typename Archive, typename Scalar, int Options>
     void serialize(

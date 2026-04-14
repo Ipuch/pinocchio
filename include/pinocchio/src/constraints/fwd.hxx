@@ -58,6 +58,14 @@ namespace pinocchio
   typedef JointLimitConstraintDataTpl<context::Scalar> JointLimitConstraintData;
 
   template<typename Scalar, int Options = 0>
+  struct CoordinateCoupletConstraintModelTpl;
+  typedef CoordinateCoupletConstraintModelTpl<context::Scalar> CoordinateCoupletConstraintModel;
+
+  template<typename Scalar, int Options = 0>
+  struct CoordinateCoupletConstraintDataTpl;
+  typedef CoordinateCoupletConstraintDataTpl<context::Scalar> CoordinateCoupletConstraintData;
+
+  template<typename Scalar, int Options = 0>
   struct PointAnchorConstraintModelTpl;
   typedef PointAnchorConstraintModelTpl<context::Scalar> PointAnchorConstraintModel;
   template<typename Scalar, int Options = 0>

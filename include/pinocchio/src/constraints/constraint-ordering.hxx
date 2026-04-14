@@ -100,6 +100,37 @@ namespace pinocchio
       PINOCCHIO_UNUSED_VARIABLE(data);
     }
 
+    template<typename ConstraintScalar, int ConstraintOptions>
+    static void algo_step(
+      const CoordinateCoupletConstraintModelTpl<ConstraintScalar, ConstraintOptions> & cmodel,
+      const Model & model,
+      Data & data)
+    {
+      PINOCCHIO_UNUSED_VARIABLE(model);
+
+      const JointIndex joint1_id = cmodel.getJoint1Id();
+      const JointIndex joint2_id = cmodel.getJoint2Id();
+      auto & neighbours = data.joint_neighbours;
+
+      const auto constraint_size = cmodel.residualSize();
+      data.constraints_supported_dim[joint1_id] += constraint_size;
+      if (joint2_id != joint1_id)
+        data.constraints_supported_dim[joint2_id] += constraint_size;
+
+      if (joint1_id > 0 && joint2_id > 0 && joint1_id != joint2_id)
+      {
+        data.joint_coupling_info(Eigen::Index(joint1_id), Eigen::Index(joint2_id)) = true;
+        data.joint_coupling_info(Eigen::Index(joint2_id), Eigen::Index(joint1_id)) = true;
+
+        auto & joint1_neighbours = neighbours[joint1_id];
+        if (!internal::helper::exists(joint1_neighbours, joint2_id))
+          joint1_neighbours.push_back(joint2_id);
+        auto & joint2_neighbours = neighbours[joint2_id];
+        if (!internal::helper::exists(joint2_neighbours, joint1_id))
+          joint2_neighbours.push_back(joint1_id);
+      }
+    }
+
     using Base::run;
 
     template<typename ConstraintModel>

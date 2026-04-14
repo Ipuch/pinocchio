@@ -31,6 +31,9 @@ namespace pinocchio
     typedef JointLimitConstraintModelTpl<Scalar, Options> JointLimitConstraintModel;
     typedef JointLimitConstraintDataTpl<Scalar, Options> JointLimitConstraintData;
 
+    typedef CoordinateCoupletConstraintModelTpl<Scalar, Options> CoordinateCoupletConstraintModel;
+    typedef CoordinateCoupletConstraintDataTpl<Scalar, Options> CoordinateCoupletConstraintData;
+
     typedef FrameAnchorConstraintModelTpl<Scalar, Options> FrameAnchorConstraintModel;
     typedef FrameAnchorConstraintDataTpl<Scalar, Options> FrameAnchorConstraintData;
 
@@ -40,6 +43,7 @@ namespace pinocchio
       PointContactConstraintModel,
       JointFrictionConstraintModel,
       JointLimitConstraintModel,
+      CoordinateCoupletConstraintModel,
       FrameAnchorConstraintModel>
       ConstraintModelVariant;
 
@@ -49,6 +53,7 @@ namespace pinocchio
       PointContactConstraintData,
       JointFrictionConstraintData,
       JointLimitConstraintData,
+      CoordinateCoupletConstraintData,
       FrameAnchorConstraintData>
       ConstraintDataVariant;
   }; // struct ConstraintCollectionDefaultTpl
