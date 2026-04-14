@@ -102,7 +102,7 @@ namespace pinocchio
 
     template<typename ConstraintScalar, int ConstraintOptions>
     static void algo_step(
-      const CoordinateCoupletConstraintModelTpl<ConstraintScalar, ConstraintOptions> & cmodel,
+      const CoordinateCouplerConstraintModelTpl<ConstraintScalar, ConstraintOptions> & cmodel,
       const Model & model,
       Data & data)
     {

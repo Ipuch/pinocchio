@@ -16,8 +16,8 @@
 
 using namespace pinocchio;
 
-typedef CoordinateCoupletConstraintModel::EigenIndexVector EigenIndexVector;
-typedef CoordinateCoupletConstraintModel::BooleanVector BooleanVector;
+typedef CoordinateCouplerConstraintModel::EigenIndexVector EigenIndexVector;
+typedef CoordinateCouplerConstraintModel::BooleanVector BooleanVector;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE(constraint_constructor_and_calc)
   q[1] = -0.2;
   data.q_in = q;
 
-  CoordinateCoupletConstraintModel constraint_model(model, 0, 1);
-  CoordinateCoupletConstraintData constraint_data(constraint_model);
+  CoordinateCouplerConstraintModel constraint_model(model, 0, 1);
+  CoordinateCouplerConstraintData constraint_data(constraint_model);
   constraint_model.calc(model, data, constraint_data);
 
   BOOST_CHECK_EQUAL(constraint_model.residualSize(), 1);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(cast_and_variant)
   Model model;
   buildModels::manipulator(model);
 
-  CoordinateCoupletConstraintModel cm(model, 0, 1);
+  CoordinateCouplerConstraintModel cm(model, 0, 1);
   const auto cm_cast_double = cm.cast<double>();
   BOOST_CHECK(cm_cast_double == cm);
 
@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(constraint_jacobian)
 
   Data data(model);
 
-  CoordinateCoupletConstraintModel constraint_model(model, 0, 1);
-  CoordinateCoupletConstraintData constraint_data(constraint_model);
+  CoordinateCouplerConstraintModel constraint_model(model, 0, 1);
+  CoordinateCouplerConstraintData constraint_data(constraint_model);
 
   const double eps_fd = 1e-8;
   for (int i = 0; i < 100; ++i)
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(constraint_jacobian)
     constraint_model.jacobian(model, data, constraint_data, jacobian_matrix);
 
     Data data_fd(model);
-    CoordinateCoupletConstraintData constraint_data_fd(constraint_model);
+    CoordinateCouplerConstraintData constraint_data_fd(constraint_model);
     Eigen::MatrixXd jacobian_matrix_fd(constraint_model.residualSize(), model.nv);
 
     for (Eigen::Index k = 0; k < model.nv; ++k)
@@ -112,8 +112,8 @@ BOOST_AUTO_TEST_CASE(check_maps_and_row_support)
   const Eigen::VectorXd v = Eigen::VectorXd::Random(model.nv);
   data.q_in = q;
 
-  CoordinateCoupletConstraintModel constraint_model(model, 0, 1);
-  CoordinateCoupletConstraintData constraint_data(constraint_model);
+  CoordinateCouplerConstraintModel constraint_model(model, 0, 1);
+  CoordinateCouplerConstraintData constraint_data(constraint_model);
   constraint_model.calc(model, data, constraint_data);
 
   Eigen::MatrixXd J(constraint_model.residualSize(), model.nv);
@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE(ordering_and_inertia_contract)
   const Eigen::VectorXd q = randomConfiguration(model);
   data.q_in = q;
 
-  CoordinateCoupletConstraintModel constraint_model(model, 0, 1);
-  CoordinateCoupletConstraintData constraint_data(constraint_model);
+  CoordinateCouplerConstraintModel constraint_model(model, 0, 1);
+  CoordinateCouplerConstraintData constraint_data(constraint_model);
   constraint_model.calc(model, data, constraint_data);
 
   std::vector<ConstraintModel> constraints;

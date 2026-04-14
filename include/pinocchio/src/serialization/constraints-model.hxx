@@ -144,10 +144,10 @@ namespace boost
     namespace internal
     {
       template<typename Scalar, int Options>
-      struct CoordinateCoupletConstraintModelAccessor
-      : public ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options>
+      struct CoordinateCouplerConstraintModelAccessor
+      : public ::pinocchio::CoordinateCouplerConstraintModelTpl<Scalar, Options>
       {
-        typedef ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> Base;
+        typedef ::pinocchio::CoordinateCouplerConstraintModelTpl<Scalar, Options> Base;
         using Base::m_coordinate1_id;
         using Base::m_coordinate2_id;
         using Base::m_joint1_id;
@@ -196,17 +196,17 @@ namespace boost
     template<typename Archive, typename Scalar, int Options>
     void serialize(
       Archive & ar,
-      ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> & cmodel,
+      ::pinocchio::CoordinateCouplerConstraintModelTpl<Scalar, Options> & cmodel,
       const unsigned int /*version*/)
     {
-      typedef ::pinocchio::CoordinateCoupletConstraintModelTpl<Scalar, Options> Self;
+      typedef ::pinocchio::CoordinateCouplerConstraintModelTpl<Scalar, Options> Self;
       typedef typename Self::Base Base;
       ar & make_nvp("base", boost::serialization::base_object<Base>(cmodel));
       typedef typename Self::BaseCommonParameters BaseCommonParameters;
       ar & make_nvp(
         "base_common_parameters", boost::serialization::base_object<BaseCommonParameters>(cmodel));
 
-      typedef internal::CoordinateCoupletConstraintModelAccessor<Scalar, Options> Accessor;
+      typedef internal::CoordinateCouplerConstraintModelAccessor<Scalar, Options> Accessor;
       auto & cmodel_ = reinterpret_cast<Accessor &>(cmodel);
       ar & make_nvp("m_coordinate1_id", cmodel_.m_coordinate1_id);
       ar & make_nvp("m_coordinate2_id", cmodel_.m_coordinate2_id);

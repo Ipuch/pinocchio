@@ -97,7 +97,7 @@
 #include "pinocchio/src/constraints/jointwise-constraint-model-base.hxx"
 #include "pinocchio/src/constraints/joint-friction-constraint.hxx"
 #include "pinocchio/src/constraints/joint-limit-constraint.hxx"
-#include "pinocchio/src/constraints/coordinate-couplet-constraint.hxx"
+#include "pinocchio/src/constraints/coordinate-coupler-constraint.hxx"
 
 #include "pinocchio/src/constraints/constraint-collection-default.hxx"
 

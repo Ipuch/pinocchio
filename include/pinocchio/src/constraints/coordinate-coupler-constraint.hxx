@@ -11,7 +11,9 @@
   #include "pinocchio/constraints.hpp"
 #endif // PINOCCHIO_LSP
 
+#include <algorithm>
 #include <iterator>
+#include <stdexcept>
 #include <tuple>
 
 namespace pinocchio
@@ -21,19 +23,19 @@ namespace pinocchio
   // Cast
   // --------------------------------------------------------------
   template<typename NewScalar, typename Scalar, int Options>
-  struct CastType<NewScalar, CoordinateCoupletConstraintModelTpl<Scalar, Options>>
+  struct CastType<NewScalar, CoordinateCouplerConstraintModelTpl<Scalar, Options>>
   {
-    typedef CoordinateCoupletConstraintModelTpl<NewScalar, Options> type;
+    typedef CoordinateCouplerConstraintModelTpl<NewScalar, Options> type;
   };
 
   // --------------------------------------------------------------
   // Traits
   // --------------------------------------------------------------
   template<typename _Scalar, int _Options>
-  struct traits<CoordinateCoupletConstraintModelTpl<_Scalar, _Options>>
+  struct traits<CoordinateCouplerConstraintModelTpl<_Scalar, _Options>>
   {
-    typedef CoordinateCoupletConstraintModelTpl<_Scalar, _Options> ConstraintModel;
-    typedef CoordinateCoupletConstraintDataTpl<_Scalar, _Options> ConstraintData;
+    typedef CoordinateCouplerConstraintModelTpl<_Scalar, _Options> ConstraintModel;
+    typedef CoordinateCouplerConstraintDataTpl<_Scalar, _Options> ConstraintData;
 
     typedef ConstraintModel Model;
     typedef ConstraintData Data;
@@ -91,17 +93,17 @@ namespace pinocchio
   };
 
   template<typename _Scalar, int _Options>
-  struct traits<CoordinateCoupletConstraintDataTpl<_Scalar, _Options>>
-  : traits<CoordinateCoupletConstraintModelTpl<_Scalar, _Options>>
+  struct traits<CoordinateCouplerConstraintDataTpl<_Scalar, _Options>>
+  : traits<CoordinateCouplerConstraintModelTpl<_Scalar, _Options>>
   {
   };
 
   template<typename _Scalar, int _Options>
-  struct CoordinateCoupletConstraintModelTpl
-  : JointWiseConstraintModelBase<CoordinateCoupletConstraintModelTpl<_Scalar, _Options>>
-  , ConstraintModelCommonParameters<CoordinateCoupletConstraintModelTpl<_Scalar, _Options>>
+  struct CoordinateCouplerConstraintModelTpl
+  : JointWiseConstraintModelBase<CoordinateCouplerConstraintModelTpl<_Scalar, _Options>>
+  , ConstraintModelCommonParameters<CoordinateCouplerConstraintModelTpl<_Scalar, _Options>>
   {
-    typedef CoordinateCoupletConstraintModelTpl Self;
+    typedef CoordinateCouplerConstraintModelTpl Self;
     typedef JointWiseConstraintModelBase<Self> Base;
     typedef ConstraintModelCommonParameters<Self> BaseCommonParameters;
     typedef ConstraintModelBase<Self> RootBase;
@@ -134,10 +136,10 @@ namespace pinocchio
     typedef std::vector<JointIndex> JointIndexVector;
 
     template<typename NewScalar, int NewOptions>
-    friend struct CoordinateCoupletConstraintModelTpl;
+    friend struct CoordinateCouplerConstraintModelTpl;
 
     template<typename NewScalar, int NewOptions>
-    friend struct CoordinateCoupletConstraintDataTpl;
+    friend struct CoordinateCouplerConstraintDataTpl;
 
     using RootBase::classname;
     using RootBase::jacobianMatrixProduct;
@@ -166,7 +168,7 @@ namespace pinocchio
       return static_cast<const BaseCommonParameters &>(*this);
     }
 
-    CoordinateCoupletConstraintModelTpl()
+    CoordinateCouplerConstraintModelTpl()
     : m_coordinate1_id(-1)
     , m_coordinate2_id(-1)
     , m_joint1_id(0)
@@ -189,16 +191,16 @@ namespace pinocchio
     }
 
     template<int OtherOptions, template<typename, int> class JointCollectionTpl>
-    explicit CoordinateCoupletConstraintModelTpl(
+    explicit CoordinateCouplerConstraintModelTpl(
       const ModelTpl<Scalar, OtherOptions, JointCollectionTpl> & model)
-    : CoordinateCoupletConstraintModelTpl(model, Eigen::Index(0), Eigen::Index(1))
+    : CoordinateCouplerConstraintModelTpl(model, Eigen::Index(0), Eigen::Index(1))
     {
       PINOCCHIO_CHECK_INPUT_ARGUMENT(
-        model.nq >= 2, "CoordinateCoupletConstraintModel requires at least two coordinates.");
+        model.nq >= 2, "CoordinateCouplerConstraintModel requires at least two coordinates.");
     }
 
     template<int OtherOptions, template<typename, int> class JointCollectionTpl>
-    CoordinateCoupletConstraintModelTpl(
+    CoordinateCouplerConstraintModelTpl(
       const ModelTpl<Scalar, OtherOptions, JointCollectionTpl> & model,
       const Eigen::Index coordinate1_id,
       const Eigen::Index coordinate2_id)
@@ -224,9 +226,9 @@ namespace pinocchio
     }
 
     template<typename NewScalar>
-    typename CastType<NewScalar, CoordinateCoupletConstraintModelTpl>::type cast() const
+    typename CastType<NewScalar, CoordinateCouplerConstraintModelTpl>::type cast() const
     {
-      typedef typename CastType<NewScalar, CoordinateCoupletConstraintModelTpl>::type ReturnType;
+      typedef typename CastType<NewScalar, CoordinateCouplerConstraintModelTpl>::type ReturnType;
       ReturnType res;
       Base::cast(res);
       BaseCommonParameters::template cast<NewScalar>(res);
@@ -252,7 +254,7 @@ namespace pinocchio
       return res;
     }
 
-    bool operator==(const CoordinateCoupletConstraintModelTpl & other) const
+    bool operator==(const CoordinateCouplerConstraintModelTpl & other) const
     {
       return base() == other.base() && base_common_parameters() == other.base_common_parameters()
              && m_coordinate1_id == other.m_coordinate1_id
@@ -272,14 +274,14 @@ namespace pinocchio
              && m_max_selected_nv == other.m_max_selected_nv;
     }
 
-    bool operator!=(const CoordinateCoupletConstraintModelTpl & other) const
+    bool operator!=(const CoordinateCouplerConstraintModelTpl & other) const
     {
       return !(*this == other);
     }
 
     static std::string classnameImpl()
     {
-      return std::string("CoordinateCoupletConstraintModel");
+      return std::string("CoordinateCouplerConstraintModel");
     }
 
     std::string shortnameImpl() const
@@ -660,7 +662,7 @@ namespace pinocchio
       {
         PINOCCHIO_THROW_PRETTY(
           std::invalid_argument,
-          "CoordinateCoupletConstraintModel only supports appendCouplingConstraintInertias when "
+          "CoordinateCouplerConstraintModel only supports appendCouplingConstraintInertias when "
           "both coordinates belong to the same joint.");
       }
 
@@ -716,9 +718,9 @@ namespace pinocchio
         break;
       }
       default:
-        assert(false && "Invalid MatrixBlockType for CoordinateCoupletConstraintModel.");
+        assert(false && "Invalid MatrixBlockType for CoordinateCouplerConstraintModel.");
         PINOCCHIO_THROW_PRETTY(
-          std::invalid_argument, "Invalid MatrixBlockType for CoordinateCoupletConstraintModel.");
+          std::invalid_argument, "Invalid MatrixBlockType for CoordinateCouplerConstraintModel.");
       }
     }
 
@@ -734,7 +736,7 @@ namespace pinocchio
         "coordinate2_id should belong to [0, model.nq).");
       PINOCCHIO_CHECK_INPUT_ARGUMENT(
         m_coordinate1_id != m_coordinate2_id,
-        "CoordinateCoupletConstraintModel requires two distinct coordinates.");
+        "CoordinateCouplerConstraintModel requires two distinct coordinates.");
 
       std::tie(m_joint1_id, m_joint1_local_coordinate_id, m_joint1_nq, m_joint1_nv, m_joint1_idx_v)
         = findJointForCoordinate(model, m_coordinate1_id);
@@ -816,10 +818,10 @@ namespace pinocchio
   };
 
   template<typename _Scalar, int _Options>
-  struct CoordinateCoupletConstraintDataTpl
-  : ConstraintDataBase<CoordinateCoupletConstraintDataTpl<_Scalar, _Options>>
+  struct CoordinateCouplerConstraintDataTpl
+  : ConstraintDataBase<CoordinateCouplerConstraintDataTpl<_Scalar, _Options>>
   {
-    typedef CoordinateCoupletConstraintDataTpl Self;
+    typedef CoordinateCouplerConstraintDataTpl Self;
     typedef ConstraintDataBase<Self> Base;
 
     typedef typename traits<Self>::ConstraintModel ConstraintModel;
@@ -845,12 +847,12 @@ namespace pinocchio
       return static_cast<const Base &>(*this);
     }
 
-    CoordinateCoupletConstraintDataTpl()
+    CoordinateCouplerConstraintDataTpl()
     : constraint_residual(ResidualVectorType::Zero())
     {
     }
 
-    explicit CoordinateCoupletConstraintDataTpl(const ConstraintModel & cmodel)
+    explicit CoordinateCouplerConstraintDataTpl(const ConstraintModel & cmodel)
     : constraint_residual(ResidualVectorType::Zero())
     {
       compact_tangent_map.resize(cmodel.m_total_selected_nq, cmodel.m_max_selected_nv);
@@ -861,7 +863,7 @@ namespace pinocchio
       coordinate2_tangent_map.setZero();
     }
 
-    bool operator==(const CoordinateCoupletConstraintDataTpl & other) const
+    bool operator==(const CoordinateCouplerConstraintDataTpl & other) const
     {
       return base() == other.base() && constraint_residual == other.constraint_residual
              && compact_tangent_map == other.compact_tangent_map
@@ -869,14 +871,14 @@ namespace pinocchio
              && coordinate2_tangent_map == other.coordinate2_tangent_map;
     }
 
-    bool operator!=(const CoordinateCoupletConstraintDataTpl & other) const
+    bool operator!=(const CoordinateCouplerConstraintDataTpl & other) const
     {
       return !(*this == other);
     }
 
     static std::string classnameImpl()
     {
-      return std::string("CoordinateCoupletConstraintData");
+      return std::string("CoordinateCouplerConstraintData");
     }
 
     std::string shortnameImpl() const

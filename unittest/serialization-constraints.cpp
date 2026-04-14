@@ -113,10 +113,10 @@ struct initConstraint<pinocchio::JointFrictionConstraintModel, void>
 };
 
 template<>
-struct initConstraint<pinocchio::CoordinateCoupletConstraintModel, void>
+struct initConstraint<pinocchio::CoordinateCouplerConstraintModel, void>
 {
   typedef pinocchio::Model Model;
-  typedef pinocchio::CoordinateCoupletConstraintModel ConstraintModel;
+  typedef pinocchio::CoordinateCouplerConstraintModel ConstraintModel;
 
   static ConstraintModel run(const Model & model)
   {
