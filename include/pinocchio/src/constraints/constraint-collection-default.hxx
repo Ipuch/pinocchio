@@ -34,6 +34,9 @@ namespace pinocchio
     typedef CoordinateCouplerConstraintModelTpl<Scalar, Options> CoordinateCouplerConstraintModel;
     typedef CoordinateCouplerConstraintDataTpl<Scalar, Options> CoordinateCouplerConstraintData;
 
+    typedef PointOnEllipsoidConstraintModelTpl<Scalar, Options> PointOnEllipsoidConstraintModel;
+    typedef PointOnEllipsoidConstraintDataTpl<Scalar, Options> PointOnEllipsoidConstraintData;
+
     typedef FrameAnchorConstraintModelTpl<Scalar, Options> FrameAnchorConstraintModel;
     typedef FrameAnchorConstraintDataTpl<Scalar, Options> FrameAnchorConstraintData;
 
@@ -44,6 +47,7 @@ namespace pinocchio
       JointFrictionConstraintModel,
       JointLimitConstraintModel,
       CoordinateCouplerConstraintModel,
+      PointOnEllipsoidConstraintModel,
       FrameAnchorConstraintModel>
       ConstraintModelVariant;
 
@@ -54,6 +58,7 @@ namespace pinocchio
       JointFrictionConstraintData,
       JointLimitConstraintData,
       CoordinateCouplerConstraintData,
+      PointOnEllipsoidConstraintData,
       FrameAnchorConstraintData>
       ConstraintDataVariant;
   }; // struct ConstraintCollectionDefaultTpl

@@ -63,6 +63,24 @@ namespace boost
     template<typename Archive, typename Scalar, int Options>
     void serialize(
       Archive & ar,
+      ::pinocchio::PointOnEllipsoidConstraintDataTpl<Scalar, Options> & cdata,
+      const unsigned int /*version*/)
+    {
+      typedef ::pinocchio::PointOnEllipsoidConstraintDataTpl<Scalar, Options> Self;
+      typedef typename Self::Base Base;
+      ar & make_nvp("base", boost::serialization::base_object<Base>(cdata));
+      ar & make_nvp("constraint_residual", cdata.constraint_residual);
+      ar & make_nvp("oMc1", cdata.oMc1);
+      ar & make_nvp("oMc2", cdata.oMc2);
+      ar & make_nvp("d_world", cdata.d_world);
+      ar & make_nvp("d_local", cdata.d_local);
+      ar & make_nvp("D_d_local", cdata.D_d_local);
+      ar & make_nvp("u_world", cdata.u_world);
+    }
+
+    template<typename Archive, typename Scalar, int Options>
+    void serialize(
+      Archive & ar,
       ::pinocchio::JointLimitConstraintDataTpl<Scalar, Options> & cdata,
       const unsigned int /*version*/)
     {

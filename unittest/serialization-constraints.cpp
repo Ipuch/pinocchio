@@ -130,6 +130,29 @@ struct initConstraint<pinocchio::CoordinateCouplerConstraintModel, void>
 };
 
 template<>
+struct initConstraint<pinocchio::PointOnEllipsoidConstraintModel, void>
+{
+  typedef pinocchio::Model Model;
+  typedef pinocchio::PointOnEllipsoidConstraintModel ConstraintModel;
+  typedef pinocchio::SE3 SE3;
+  typedef pinocchio::JointIndex JointIndex;
+
+  static ConstraintModel run(const Model & model)
+  {
+    const JointIndex joint1_id = model.getJointId("elbow_joint");
+    const JointIndex joint2_id = model.getJointId("wrist2_joint");
+    Eigen::Vector3d semi_axes;
+    semi_axes << 0.3, 0.4, 0.5;
+    ConstraintModel cmodel(model, joint1_id, SE3::Random(), joint2_id, SE3::Random(), semi_axes);
+    cmodel.name = cmodel.classname();
+    cmodel.setCompliance(Eigen::VectorXd::Random(cmodel.residualSize()));
+    cmodel.baumgarte_corrector_parameters().Kd = 1.0;
+    cmodel.baumgarte_corrector_parameters().Kp = 3.14;
+    return cmodel;
+  }
+};
+
+template<>
 struct initConstraint<pinocchio::PointAnchorConstraintModel, void>
 {
   typedef pinocchio::Model Model;

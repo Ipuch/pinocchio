@@ -231,6 +231,34 @@ namespace boost
       ar & make_nvp("m_max_selected_nv", cmodel_.m_max_selected_nv);
     }
 
+    namespace internal
+    {
+      template<typename Scalar, int Options>
+      struct PointOnEllipsoidConstraintModelAccessor
+      : public ::pinocchio::PointOnEllipsoidConstraintModelTpl<Scalar, Options>
+      {
+        typedef ::pinocchio::PointOnEllipsoidConstraintModelTpl<Scalar, Options> Base;
+        using Base::m_inv_squared_axes;
+        using Base::m_semi_axes;
+      };
+    } // namespace internal
+
+    template<typename Archive, typename Scalar, int Options>
+    void serialize(
+      Archive & ar,
+      ::pinocchio::PointOnEllipsoidConstraintModelTpl<Scalar, Options> & cmodel,
+      const unsigned int /*version*/)
+    {
+      typedef ::pinocchio::PointOnEllipsoidConstraintModelTpl<Scalar, Options> Self;
+      typedef typename Self::Base Base;
+      ar & make_nvp("base", boost::serialization::base_object<Base>(cmodel));
+
+      typedef internal::PointOnEllipsoidConstraintModelAccessor<Scalar, Options> Accessor;
+      auto & cmodel_ = reinterpret_cast<Accessor &>(cmodel);
+      ar & make_nvp("m_semi_axes", cmodel_.m_semi_axes);
+      ar & make_nvp("m_inv_squared_axes", cmodel_.m_inv_squared_axes);
+    }
+
     template<typename Archive, typename Scalar, int Options>
     void serialize(
       Archive & ar,

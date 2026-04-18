@@ -66,6 +66,14 @@ namespace pinocchio
   typedef CoordinateCouplerConstraintDataTpl<context::Scalar> CoordinateCouplerConstraintData;
 
   template<typename Scalar, int Options = 0>
+  struct PointOnEllipsoidConstraintModelTpl;
+  typedef PointOnEllipsoidConstraintModelTpl<context::Scalar> PointOnEllipsoidConstraintModel;
+
+  template<typename Scalar, int Options = 0>
+  struct PointOnEllipsoidConstraintDataTpl;
+  typedef PointOnEllipsoidConstraintDataTpl<context::Scalar> PointOnEllipsoidConstraintData;
+
+  template<typename Scalar, int Options = 0>
   struct PointAnchorConstraintModelTpl;
   typedef PointAnchorConstraintModelTpl<context::Scalar> PointAnchorConstraintModel;
   template<typename Scalar, int Options = 0>

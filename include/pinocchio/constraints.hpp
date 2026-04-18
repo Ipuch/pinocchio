@@ -98,6 +98,7 @@
 #include "pinocchio/src/constraints/joint-friction-constraint.hxx"
 #include "pinocchio/src/constraints/joint-limit-constraint.hxx"
 #include "pinocchio/src/constraints/coordinate-coupler-constraint.hxx"
+#include "pinocchio/src/constraints/point-on-ellipsoid-constraint.hxx"
 
 #include "pinocchio/src/constraints/constraint-collection-default.hxx"
 
