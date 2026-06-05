@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Add spline joint (JointModelSplineTpl) to default joint collection ([#2784](https://github.com/stack-of-tasks/pinocchio/pull/2784))
+  - [Python example here](./examples/spline-joint.py)
+
 ### Fixed
 
 - Fix Viser visualizer: apply URDF `<mesh scale>` to mesh vertices instead of scaling the link translation ([#2878](https://github.com/stack-of-tasks/pinocchio/pull/2878))
@@ -171,7 +175,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add color support for robot meshes in Viser ([#2793](https://github.com/stack-of-tasks/pinocchio/pull/2793))
 - Add Realtime Sanitizer (RTSan) uniittest and CI to track dynamic allocations in main API ([#2809](https://github.com/stack-of-tasks/pinocchio/pull/2809))
 - Add Ellipsoid Joint (3-DOF surface constraint), get ready for biomechanics ([#2797](https://github.com/stack-of-tasks/pinocchio/pull/2797))
-- Add a new spline joint to default joint collection ([#2784](https://github.com/stack-of-tasks/pinocchio/pull/2784))
 
 ### Changed
 - Python version update ([#2802](https://github.com/stack-of-tasks/pinocchio/pull/2802)):
