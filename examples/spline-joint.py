@@ -1,6 +1,6 @@
 import time
 
-import hppfcl
+import coal
 import numpy as np
 import pinocchio as pin
 from pinocchio.visualize import MeshcatVisualizer
@@ -55,13 +55,23 @@ trajectory = generate_random_se3_trajectory(num_steps, radius, num_revolutions, 
 
 # Create a Pinocchio model with a single free-flyer joint
 model = pin.Model()
+spline_joint = (
+    pin.JointModelSplineBuilder()
+    .withDegree(3)
+    .withControlFrameVector(trajectory)
+    .withOpenUniformKnots(0.0, 1.0)
+    .build()
+)
 joint_id = model.addJoint(
-    0, pin.JointModelSpline(trajectory, 3), pin.SE3.Identity(), "free_flyer"
+    0,
+    spline_joint,
+    pin.SE3.Identity(),
+    "free_flyer",
 )
 
 # Attach a simple visual geometry (a box) to the joint
 visual_model = pin.GeometryModel()
-box_shape = hppfcl.Box(0.1, 0.2, 0.3)
+box_shape = coal.Box(0.1, 0.2, 0.3)
 # The placement of the geometry with respect to the joint frame
 geom_placement = pin.SE3.Identity()
 geom_obj = pin.GeometryObject("box", joint_id, geom_placement, box_shape)

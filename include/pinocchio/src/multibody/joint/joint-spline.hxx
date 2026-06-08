@@ -176,8 +176,8 @@ namespace pinocchio
       const Vector & knotVector,
       const size_t degree)
     : degree(degree)
-    , ctrlFrames(controlFrames)
     , knots(knotVector)
+    , ctrlFrames(controlFrames)
     {
       if (controlFrames.size() <= degree)
         PINOCCHIO_THROW_PRETTY(
@@ -192,10 +192,12 @@ namespace pinocchio
 
       for (Eigen::Index i = 1; i < knotVector.size(); ++i)
       {
-        if (!check_expression_if_real<Scalar>(knotVector[i] >= knotVector[i - 1]))
+        if (check_expression_if_real<Scalar>(knotVector[i] < knotVector[i - 1]))
+        {
           PINOCCHIO_THROW_PRETTY(
             std::invalid_argument, "JointSpline - Knot vector must be non-decreasing (knots must "
                                    "satisfy knots[i] <= knots[i+1]).");
+        }
       }
 
       min_q = knotVector[0];
@@ -311,11 +313,18 @@ namespace pinocchio
       res.degree = degree;
       res.nbCtrlFrames = nbCtrlFrames;
       res.ctrlFrames.reserve(ctrlFrames.size());
-      for (size_t k = 0; k < ctrlFrames.size(); k++)
-        res.ctrlFrames.push_back(ctrlFrames[k].template cast<NewScalar>());
+      res.relativeMotions.reserve(relativeMotions.size());
+      for (const auto & cf : ctrlFrames)
+      {
+        res.ctrlFrames.push_back(cf.template cast<NewScalar>());
+      }
+      for (const auto & rm : relativeMotions)
+      {
+        res.relativeMotions.push_back(rm.template cast<NewScalar>());
+      }
 
-      res.min_q = static_cast<NewScalar>(min_q);
-      res.max_q = static_cast<NewScalar>(max_q);
+      res.min_q = ScalarCast<NewScalar, Scalar>::cast(min_q);
+      res.max_q = ScalarCast<NewScalar, Scalar>::cast(max_q);
       res.knots = knots.template cast<NewScalar>();
 
       res.setIndexes(id(), idx_q(), idx_v(), idx_vExtended());
@@ -454,8 +463,10 @@ namespace pinocchio
     JointModelSplineBuilderTpl & withKnotVector(const std::vector<Scalar> & knots)
     {
       knots_.resize(knots.size());
-      for (size_t i = 0; i < knots.size(); ++i)
+      for (std::size_t i = 0; i < knots.size(); ++i)
+      {
         knots_[i] = knots[i];
+      }
       knot_policy_ = KnotPolicy::Custom;
 
       return *this;
