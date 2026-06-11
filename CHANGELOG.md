@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Add spline joint (JointModelSplineTpl) to default joint collection ([#2784](https://github.com/stack-of-tasks/pinocchio/pull/2784))
   - [Python example here](./examples/spline-joint.py)
+- Add spline joint regression algorithm `fitSplineJoint` (Gauss-Newton fitting of the
+  control frames to data placements, with optional Tikhonov damping and Hessian-based
+  smoothing, Lee & Terzopoulos 2008 Sec. 6.2-6.3), exposed in Python with
+  `SplineRegressionSettings`
 
 ### Fixed
 
