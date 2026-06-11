@@ -74,6 +74,17 @@ def main():
 
     # 2. Recover the spline joint by Gauss-Newton regression on those placements.
     settings = pin.SplineRegressionSettings()
+    settings.damping = 1
+    settings.smoothing_weight = 0.95
+    settings.smoothing_drag = 0.001
+    print("Default SplineRegressionSettings:")
+    print(f"  absolute_accuracy = {settings.absolute_accuracy:.1e}")
+    print(f"  relative_accuracy = {settings.relative_accuracy:.1e}")
+    print(f"  damping           = {settings.damping}")
+    print(f"  smoothing_weight  = {settings.smoothing_weight}")
+    print(f"  smoothing_drag    = {settings.smoothing_drag}")
+    print(f"  max_iter          = {settings.max_iter}")
+
     spline_joint = pin.fitSplineJoint(data_frames, q_data, 10, 8, settings)
     print(
         f"regression: {settings.iter} iterations, "
