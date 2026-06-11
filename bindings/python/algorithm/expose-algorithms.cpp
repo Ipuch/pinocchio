@@ -35,6 +35,7 @@ namespace pinocchio
 #endif // defined(PINOCCHIO_PYTHON_INTERFACE_MAIN_MODULE)
       exposeKinematicRegressor();
       exposeRegressor();
+      exposeSplineRegression();
       exposeCholesky();
       exposeModelAlgo();
       exposeImpulseDynamics();

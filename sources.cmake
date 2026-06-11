@@ -53,6 +53,7 @@ set(${PROJECT_NAME}_CORE_PUBLIC_HEADERS
     ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/solvers/constraint-solver-utils.hpp
     ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/solvers/fwd.hpp
     ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/solvers/pgs-solver.hpp
+    ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/spline-regression.hpp
     ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/utils/force.hpp
     ${PROJECT_SOURCE_DIR}/include/pinocchio/algorithm/utils/motion.hpp
     ${PROJECT_SOURCE_DIR}/include/pinocchio/common/fwd.hpp
@@ -143,6 +144,7 @@ set(${PROJECT_NAME}_CORE_PRIVATE_HEADERS
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/algorithm/delassus-operator-preconditioned.hxx
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/algorithm/crba.hxx
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/algorithm/kinematics.hxx
+    ${PROJECT_SOURCE_DIR}/include/pinocchio/src/algorithm/spline-regression.hxx
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/multibody/liegroup/liegroup-algo.hxx
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/math/matrix-inverse-code-generated.hxx
     ${PROJECT_SOURCE_DIR}/include/pinocchio/src/math/block-diagonal-matrix.hxx
@@ -955,6 +957,7 @@ set(${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/expose-delassus.cpp
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/expose-impulse-dynamics-derivatives.cpp
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/expose-kinematic-regressor.cpp
+    ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/expose-spline-regression.cpp
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/expose-crba.cpp
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/solvers/expose-admm-solver.cpp
     ${PROJECT_SOURCE_DIR}/bindings/python/algorithm/solvers/expose-pgs-solver.cpp

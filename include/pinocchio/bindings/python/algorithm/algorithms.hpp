@@ -32,6 +32,7 @@ namespace pinocchio
     void exposeGeometryAlgo();
     void exposeKinematicRegressor();
     void exposeRegressor();
+    void exposeSplineRegression();
     void exposeCholesky();
     void exposeModelAlgo();
     void exposeImpulseDynamics();

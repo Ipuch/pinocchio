@@ -390,6 +390,7 @@ add_pinocchio_unit_test(joint-helical)
 add_pinocchio_unit_test(joint-universal)
 add_pinocchio_unit_test(joint-visitors)
 add_pinocchio_unit_test(joint-spline)
+add_pinocchio_unit_test(spline-regression)
 
 # Main corpus
 add_pinocchio_unit_test(model COLLISION_OPTIONAL)
