@@ -494,7 +494,7 @@ namespace pinocchio
       // Velocity part
       data.v.toVector().noalias() = data.S.matrix() * data.joint_v;
 
-      computeBiais(
+      computeBias(
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
     }
@@ -531,7 +531,7 @@ namespace pinocchio
       data.joint_v = vs.template segment<NV>(idx_v());
       data.v.toVector().noalias() = data.S.matrix() * data.joint_v;
 
-      computeBiais(
+      computeBias(
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
     }
@@ -644,7 +644,7 @@ namespace pinocchio
 
     /// @brief Computes the bias acceleration c(q, v) = Sdot(q)·v.
     template<typename ConfigVector, typename TangentVector>
-    void computeBiais(
+    void computeBias(
       JointDataDerived & data,
       const Eigen::MatrixBase<ConfigVector> & qs,
       const Eigen::MatrixBase<TangentVector> &) const
@@ -663,12 +663,12 @@ namespace pinocchio
       dndotz_dqdot0 = -c1 * s0;
       dndotz_dqdot1 = -c0 * s1;
 
-      computeBiais(
+      computeBias(
         s0, c0, s1, c1, s2, c2, dndotx_dqdot1, dndoty_dqdot0, dndoty_dqdot1, dndotz_dqdot0,
         dndotz_dqdot1, data);
     }
 
-    void computeBiais(
+    void computeBias(
       const Scalar & s0,
       const Scalar & c0,
       const Scalar & s1,

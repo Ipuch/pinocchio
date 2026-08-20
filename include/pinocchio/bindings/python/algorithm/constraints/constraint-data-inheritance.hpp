@@ -82,7 +82,7 @@ namespace pinocchio
           .PINOCCHIO_ADD_PROPERTY(
             T, constraint_acceleration_error, "Constraint acceleration error.")
           .PINOCCHIO_ADD_PROPERTY(
-            T, constraint_acceleration_biais_term, "Constraint acceleration term.")
+            T, constraint_acceleration_bias_term, "Constraint acceleration term.")
           .PINOCCHIO_ADD_PROPERTY(T, A1_world, "Transform for joint1 in world frame.")
           .PINOCCHIO_ADD_PROPERTY(T, A2_world, "Transform for joint2 in world frame.")
           .PINOCCHIO_ADD_PROPERTY(

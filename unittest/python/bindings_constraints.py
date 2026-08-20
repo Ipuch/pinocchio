@@ -505,7 +505,7 @@ class TestJointsAlgo(TestCase):
             self.assertTrue(hasattr(cdata, "constraint_position_error"))
             self.assertTrue(hasattr(cdata, "constraint_velocity_error"))
             self.assertTrue(hasattr(cdata, "constraint_acceleration_error"))
-            self.assertTrue(hasattr(cdata, "constraint_acceleration_biais_term"))
+            self.assertTrue(hasattr(cdata, "constraint_acceleration_bias_term"))
             self.assertTrue(cdata.oMc1.inverse() * cdata.oMc2 == cdata.c1Mc2)
 
         cmodel = self.jlc

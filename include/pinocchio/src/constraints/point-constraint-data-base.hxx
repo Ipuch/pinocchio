@@ -88,7 +88,7 @@ namespace pinocchio
     , constraint_position_error(Vector3::Zero())
     , constraint_velocity_error(Vector3::Zero())
     , constraint_acceleration_error(Vector3::Zero())
-    , constraint_acceleration_biais_term(Vector3::Zero())
+    , constraint_acceleration_bias_term(Vector3::Zero())
     , A1_world(Matrix36::Zero())
     , A2_world(Matrix36::Zero())
     , A_world(Matrix36::Zero())
@@ -110,7 +110,7 @@ namespace pinocchio
     , constraint_position_error(Vector3::Zero())
     , constraint_velocity_error(Vector3::Zero())
     , constraint_acceleration_error(Vector3::Zero())
-    , constraint_acceleration_biais_term(Vector3::Zero())
+    , constraint_acceleration_bias_term(Vector3::Zero())
     , A1_world(Matrix36::Zero())
     , A2_world(Matrix36::Zero())
     , A_world(Matrix36::Zero())
@@ -130,7 +130,7 @@ namespace pinocchio
              && c1Mc2 == other.c1Mc2 && constraint_position_error == other.constraint_position_error
              && constraint_velocity_error == other.constraint_velocity_error
              && constraint_acceleration_error == other.constraint_acceleration_error
-             && constraint_acceleration_biais_term == other.constraint_acceleration_biais_term
+             && constraint_acceleration_bias_term == other.constraint_acceleration_bias_term
              && A1_world == other.A1_world && A2_world == other.A2_world && A_world == other.A_world
              && A1_local == other.A1_local && A2_local == other.A2_local
              && A_local == other.A_local;
@@ -168,8 +168,8 @@ namespace pinocchio
     /// \brief Constraint acceleration error
     Vector3 constraint_acceleration_error;
 
-    /// \brief Constraint acceleration biais
-    Vector3 constraint_acceleration_biais_term;
+    /// \brief Constraint acceleration bias
+    Vector3 constraint_acceleration_bias_term;
 
     Matrix36 A1_world;
     Matrix36 A2_world;

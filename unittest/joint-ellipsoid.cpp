@@ -525,8 +525,8 @@ BOOST_AUTO_TEST_CASE(testSdotFiniteDifferences)
   BOOST_CHECK(Sdot_ref.isApprox(Sdot_fd, sqrt(eps)));
 }
 
-/// @brief Test that biais term equals Sdot * v
-BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
+/// @brief Test that bias term equals Sdot * v
+BOOST_AUTO_TEST_CASE(testBiasVsSdotTimesVelocity)
 {
   using namespace pinocchio;
 
@@ -549,7 +549,7 @@ BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
   TangentVector_t v = TangentVector_t::Random();
   jmodel.calc(jdata, q, v);
 
-  jmodel.computeBiais(jdata, q, v);
+  jmodel.computeBias(jdata, q, v);
 
   const Eigen::Matrix<double, 6, 3> Sdot = computeMotionSubspaceDerivative(jmodel, q, v);
 
