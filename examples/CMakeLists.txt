@@ -156,6 +156,7 @@ if(BUILD_PYTHON_INTERFACE)
             simulation-lcaba
             model-graph-geometry
             constant-length-constraint-kinematics
+            ellipsoid-point-constraint-kinematics
         )
         if(BUILD_WITH_URDF_SUPPORT)
             list(
