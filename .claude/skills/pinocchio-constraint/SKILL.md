@@ -87,6 +87,13 @@ Store a **dedicated parameter** as a protected `m_foo` with `getFoo()/setFoo()` 
 Runtime guards inside `calc` are `assert(check_expression_if_real<Scalar>(...))`, never a throw:
 `calc` is a hot loop, and `check_expression_if_real` is what keeps CasADi/CppAD scalars compiling.
 
+`check_expression_if_real` is not enough on its own: **the expression inside it must still be a
+scalar comparison**. `radii.minCoeff() > Scalar(0)` compiles for `double` and fails for
+`casadi::SX` with "cannot convert `casadi::Matrix<casadi::SXElem>` to `bool`", because the Eigen
+reduction needs `operator<` to return a bool. Loop over the components instead — which is why no
+other constraint header contains a `minCoeff`/`maxCoeff`. Nothing in a default build catches this:
+you need `-DBUILD_WITH_CASADI_SUPPORT=ON`, or the standalone probe below.
+
 ## Step 3 — registration checklist
 
 Every line is a hard compile error (or a silently missing binding) if skipped.
@@ -177,6 +184,22 @@ src/algorithm/constraints/utils.cpp   src/algorithm/constraint-cholesky.cpp
 The project builds with `-Wconversion -Wcast-qual -Wcast-align -Wwrite-strings -pedantic`; the
 script inherits them from `compile_commands.json`, so **aim for zero warnings**, and re-run once
 with `--release` since asserts and `-O3` change what gets instantiated.
+
+**Check the symbolic scalars too**, without waiting for a CasADi-enabled build: write a tiny
+`main()` that instantiates your model+data with `casadi::SX` and calls `calc` and `jacobian` on
+them, then `-fsyntax-only` it against a prefix that has casadi (`.pixi/envs/all` or `.pixi/envs/casadi`).
+Template instantiation is what surfaces the bool-conversion failures, so the probe must actually
+call the methods, not merely name the type.
+
+```cpp
+typedef casadi::SX ADScalar;
+pinocchio::ModelTpl<ADScalar> ad_model = model.cast<ADScalar>();
+typename pinocchio::ModelTpl<ADScalar>::Data ad_data(ad_model);
+// ... forwardKinematics + computeJointJacobians on a symbolic q ...
+CM cmodel(ad_model, /* ... */);  typename CM::ConstraintData cdata(cmodel);
+cmodel.calc(ad_model, ad_data, cdata);
+const auto J = cmodel.jacobian(ad_model, ad_data, cdata);
+```
 
 Python bindings are often `OFF` in a local build tree. Type-check them directly:
 
