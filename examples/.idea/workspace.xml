@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6cf1ad13-de0f-42f8-bd9d-085ecb42138f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/bindings/python/algorithm/constraints/constraints-datas.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/bindings/python/algorithm/constraints/constraints-datas.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/bindings/python/algorithm/constraints/constraints-models.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/bindings/python/algorithm/constraints/constraints-models.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/bindings/python/context/generic.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/bindings/python/context/generic.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/constraints.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/constraints.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/constraints/constant-length-constraint.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/constraints/constant-length-constraint.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/constraints/constraint-collection-default.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/constraints/constraint-collection-default.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/constraints/fwd.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/constraints/fwd.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/constraints/utils.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/constraints/utils.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/serialization/constraints-data.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/serialization/constraints-data.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../include/pinocchio/src/serialization/constraints-model.hxx" beforeDir="false" afterPath="$PROJECT_DIR$/../include/pinocchio/src/serialization/constraints-model.hxx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../unittest/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../unittest/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../unittest/serialization-constraints.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../unittest/serialization-constraints.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3ILxI1XhPnUelWghfiwAvFQPSZl" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.constant-length-constraint-3d.executor&quot;: &quot;Run&quot;,
+    &quot;Python.constant-length-constraint-kinematics.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;topic/ellipsoid-contact-constraint&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/ppuchaud/ProjetsPython/pinocchio/examples&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Python.ellipsoid-point-constraint-kinematics">
+    <configuration default="true" type="LATEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <steps>
+        <latexmkCompile id="2157c9ea-6081-47ae-8c56-cc933ea1515a" />
+        <pdfViewer id="9e02667f-6f32-427f-ae77-cda3d8f7bde0" />
+      </steps>
+      <method v="2" />
+    </configuration>
+    <configuration name="constant-length-constraint-3d" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="examples" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/constant-length-constraint-3d.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="constant-length-constraint-kinematics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="examples" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/constant-length-constraint-kinematics.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ellipsoid-point-constraint-kinematics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="examples" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ellipsoid-point-constraint-kinematics.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.ellipsoid-point-constraint-kinematics" />
+        <item itemvalue="Python.constant-length-constraint-3d" />
+        <item itemvalue="Python.constant-length-constraint-kinematics" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-821f704e66d9-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.9437.214" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6cf1ad13-de0f-42f8-bd9d-085ecb42138f" name="Changes" comment="" />
+      <created>1787557567165</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1787557567165</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
