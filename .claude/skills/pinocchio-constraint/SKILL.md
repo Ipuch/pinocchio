@@ -180,7 +180,25 @@ inherited behaviour or is implied by another test. The set that survived review 
 5. `constraint_velocity_error == J·v`, and velocity **and** acceleration errors vs finite
    differences;
 6. force/motion mappings against `J^T λ` and `J v`;
-7. `cast`.
+7. `cast`;
+8. **the Delassus scene.** Add a `has_<name>` flag to `ConstrainedHumanoidScene` in
+   `unittest/utils.hpp` — appended last and defaulting to `false`, so no caller breaks — and pass
+   `true` in the nine `ConstrainedHumanoidScene<double> scene(...)` of
+   `unittest/delassus-operations.cpp`, or the flag tests nothing. The dense, rigid-body and
+   Cholesky-expression Delassus operators then check the constraint against `J M⁻¹ Jᵀ`, and the
+   rigid-body one calls `appendCouplingConstraintInertias` (`delassus-operator-rigid-body.hxx`),
+   which no other test reaches. A collaborator asked for exactly this on PR #2943.
+
+   Build **two** constraints in that block: one anchored on the universe, **and one closing a loop
+   between two moving bodies** (`rleg6_joint` ↔ `lleg6_joint`). Every other binary constraint of
+   the scene is anchored on the universe, so the loop is the only thing that runs the joint
+   cross-coupling branch (`I12`, `data.joint_cross_coupling`). No extra registration is needed:
+   `ConstraintCouplingInformationCollectorStep` (`constraint-ordering.hxx`) collects the joint pair
+   of any `BinaryKinematicsConstraintModelBase`. Run it with asserts **on** — the check that the
+   pair exists in `joint_cross_coupling` is an `assert`.
+
+   Do not copy the scene's `has_frame_anchor` block as a template: it typedefs
+   `PointAnchorConstraintModelTpl`, so it builds point anchors, not frame anchors.
 
 Rejected as redundant, and why — do not add them back:
 
@@ -201,10 +219,17 @@ Rejected as redundant, and why — do not add them back:
 ```
 
 **Never pipe the script into a `grep` without checking its exit code.** If the script is missing
-(this directory is untracked, so a `git stash -u` or `git clean` removes it), `grep` swallows the
-"No such file" message and the run looks like a silent success.
+— on a branch where `.claude/` was never committed, say — `grep` swallows the "No such file"
+message and the run looks like a silent success.
 
-Then, because adding a variant type recompiles a lot of the library, syntax-check the heavy
+Then **run** the Delassus test of Step 4, item 8, with asserts on — the same script handles any
+`unittest/*.cpp`:
+
+```bash
+.claude/skills/pinocchio-constraint/scripts/build-test.sh unittest/delassus-operations.cpp
+```
+
+And, because adding a variant type recompiles a lot of the library, syntax-check the heavy
 consumers — **two or three at a time at most**, each peaks at several GB:
 
 ```
