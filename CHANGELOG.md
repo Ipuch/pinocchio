@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix MJCF body-based connect constraints to express body-local anchors in supporting-joint coordinates ([#2961](https://github.com/stack-of-tasks/pinocchio/pull/2961)).
 - Fix `RobotWrapper.buildReducedRobot` crash when called with a RobotWrapper without visual and geometry model ([#2981](https://github.com/stack-of-tasks/pinocchio/pull/2981))
 - Fix MJCF body-based weld constraints to express them in supporting-joint coordinates ([#2984](https://github.com/stack-of-tasks/pinocchio/pull/2984)).
+- Fix `JointModelEllipsoidTpl::isEqual` ignoring the radii, and the ModelGraph dropping the ellipsoid radii when applying a `q_ref` and when building the reverse edge
 
 ## [4.1.0] - 2026-07-07
 

@@ -698,6 +698,86 @@ BOOST_AUTO_TEST_CASE(test_ellipsoid)
   BOOST_CHECK(SE3isApprox(data_model.oMi[idx], d_f.oMi[m_forward.getJointId("body1_to_body2")]));
 }
 
+/// @brief test that the radii of an ellipsoid joint reach the final Model
+BOOST_AUTO_TEST_CASE(test_ellipsoid_radii)
+{
+  using namespace pinocchio::graph;
+
+  ModelGraph g = buildReversableModelGraph(JointEllipsoid(0.01, 0.02, 0.03));
+
+  pinocchio::Model m = buildModel(g, "body1", pinocchio::SE3::Identity());
+  const auto & jmodel =
+    boost::get<pinocchio::JointModelEllipsoid>(m.joints[m.getJointId("body1_to_body2")]);
+  BOOST_CHECK_EQUAL(jmodel.radius_x, 0.01);
+  BOOST_CHECK_EQUAL(jmodel.radius_y, 0.02);
+  BOOST_CHECK_EQUAL(jmodel.radius_z, 0.03);
+
+  // Ellipsoid joints cannot be reversed yet, but the reverse edge stored in the graph
+  // must keep the radii of the forward one.
+  bool reverse_edge_found = false;
+  for (auto [e, e_end] = boost::edges(g.graph); e != e_end; ++e)
+  {
+    const ModelGraphEdge & edge = g.graph[*e];
+    if (edge.forward)
+      continue;
+    reverse_edge_found = true;
+    const JointEllipsoid * joint = boost::get<JointEllipsoid>(&edge.joint);
+    BOOST_REQUIRE(joint != nullptr);
+    BOOST_CHECK(*joint == JointEllipsoid(0.01, 0.02, 0.03));
+  }
+  BOOST_CHECK(reverse_edge_found);
+  BOOST_CHECK_THROW(buildModel(g, "body2", pinocchio::SE3::Identity()), std::invalid_argument);
+}
+
+/// @brief test that q_ref of an ellipsoid joint takes the radii into account
+BOOST_AUTO_TEST_CASE(test_q_ref_ellipsoid)
+{
+  using namespace pinocchio::graph;
+
+  const double rx = 0.5, ry = 1.5, rz = 2.5;
+  Eigen::Vector3d q_ref(M_PI / 4, M_PI / 3, -M_PI / 6);
+
+  ModelGraph g;
+  g.addBody("body1", pinocchio::Inertia::Identity());
+  g.addBody("body2", pinocchio::Inertia::Identity());
+  const pinocchio::SE3 poseBody1(Eigen::Matrix3d::Identity(), Eigen::Vector3d(2., 0., 0.));
+  const pinocchio::SE3 poseBody2(Eigen::Matrix3d::Identity(), Eigen::Vector3d(0., 3., 0.));
+  g.edgeBuilder()
+    .withName("body1_to_body2")
+    .withSourceVertex("body1")
+    .withSourcePose(poseBody1)
+    .withTargetVertex("body2")
+    .withTargetPose(poseBody2)
+    .withJointType(JointEllipsoid(rx, ry, rz))
+    .withQref(q_ref)
+    .build();
+
+  // Expected pose of the joint: source pose composed with the joint transform at q_ref
+  pinocchio::JointModelEllipsoid jmodel(rx, ry, rz);
+  jmodel.setIndexes(1, 0, 0);
+  pinocchio::JointDataEllipsoid jdata = jmodel.createData();
+  jmodel.calc(jdata, q_ref);
+  // The translation must be non-trivial for this test to be meaningful
+  BOOST_REQUIRE(jdata.M.translation().norm() > 0.1);
+  const pinocchio::SE3 expected = poseBody1 * jdata.M;
+
+  pinocchio::Model m = buildModel(g, "body1", pinocchio::SE3::Identity());
+  BOOST_CHECK(SE3isApprox(m.jointPlacements[m.getJointId("body1_to_body2")], expected));
+
+  // The reverse edge stored in the graph must be built with the same radii:
+  // joint_to_target = joint(q_ref)^{-1} * source_to_joint^{-1}
+  bool reverse_edge_found = false;
+  for (auto [e, e_end] = boost::edges(g.graph); e != e_end; ++e)
+  {
+    const ModelGraphEdge & edge = g.graph[*e];
+    if (edge.forward)
+      continue;
+    reverse_edge_found = true;
+    BOOST_CHECK(SE3isApprox(edge.joint_to_target, jdata.M.inverse() * poseBody1.inverse()));
+  }
+  BOOST_CHECK(reverse_edge_found);
+}
+
 /// @brief test if reversing of a composite joint is correct.
 BOOST_AUTO_TEST_CASE(test_reverse_composite)
 {

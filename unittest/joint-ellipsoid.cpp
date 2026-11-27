@@ -556,4 +556,45 @@ BOOST_AUTO_TEST_CASE(testBiaisVsSdotTimesVelocity)
   BOOST_CHECK(jdata.c.toVector().isApprox(Sdot * v, 1e-12));
 }
 
+/// @brief Test that the comparison operators take the radii into account
+BOOST_AUTO_TEST_CASE(testIsEqualRadii)
+{
+  using namespace pinocchio;
+
+  // Same indexes, same radii
+  JointModelEllipsoid jmodel1(1., 2., 3.);
+  JointModelEllipsoid jmodel2(1., 2., 3.);
+  jmodel1.setIndexes(1, 0, 0);
+  jmodel2.setIndexes(1, 0, 0);
+  BOOST_CHECK(jmodel1 == jmodel2);
+  BOOST_CHECK(!(jmodel1 != jmodel2));
+
+  // Same indexes, one radius differs
+  JointModelEllipsoid jmodel_x(4., 2., 3.);
+  JointModelEllipsoid jmodel_y(1., 4., 3.);
+  JointModelEllipsoid jmodel_z(1., 2., 4.);
+  jmodel_x.setIndexes(1, 0, 0);
+  jmodel_y.setIndexes(1, 0, 0);
+  jmodel_z.setIndexes(1, 0, 0);
+  BOOST_CHECK(jmodel1 != jmodel_x);
+  BOOST_CHECK(jmodel1 != jmodel_y);
+  BOOST_CHECK(jmodel1 != jmodel_z);
+  BOOST_CHECK(!(jmodel1 == jmodel_x));
+  BOOST_CHECK(!(jmodel1 == jmodel_y));
+  BOOST_CHECK(!(jmodel1 == jmodel_z));
+
+  // Different indexes, same radii
+  JointModelEllipsoid jmodel_idx(1., 2., 3.);
+  jmodel_idx.setIndexes(2, 0, 0);
+  BOOST_CHECK(jmodel1 != jmodel_idx);
+
+  // Through the JointModel variant
+  JointModel jm1 = jmodel1;
+  JointModel jm2 = jmodel2;
+  JointModel jm_z = jmodel_z;
+  BOOST_CHECK(jm1 == jm2);
+  BOOST_CHECK(jm1 != jm_z);
+  BOOST_CHECK(!(jm1 == jm_z));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

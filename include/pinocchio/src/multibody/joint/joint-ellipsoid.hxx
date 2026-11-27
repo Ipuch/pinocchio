@@ -421,6 +421,14 @@ namespace pinocchio
       return {true, true, true};
     }
 
+    using Base::isEqual;
+    bool isEqual(const JointModelEllipsoidTpl & other) const
+    {
+      return Base::isEqual(other) && internal::comparison_eq(radius_x, other.radius_x)
+             && internal::comparison_eq(radius_y, other.radius_y)
+             && internal::comparison_eq(radius_z, other.radius_z);
+    }
+
     /// @brief Computes the spatial transformation M(q) from joint configuration.
     /// @param[in] c0, s0 Cosine and sine of q[0]
     /// @param[in] c1, s1 Cosine and sine of q[1]

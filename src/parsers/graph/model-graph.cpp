@@ -72,9 +72,9 @@ namespace pinocchio
         {
           return {JointSphericalZYX(), SE3::Identity()};
         }
-        ReturnType operator()(const JointEllipsoid &) const
+        ReturnType operator()(const JointEllipsoid & joint) const
         {
-          return {JointEllipsoid(), SE3::Identity()};
+          return {JointEllipsoid(joint.radius_x, joint.radius_y, joint.radius_z), SE3::Identity()};
         }
         ReturnType operator()(const JointTranslation &) const
         {
